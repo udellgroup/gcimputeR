@@ -47,13 +47,13 @@ X_obs[loc] = NA
 ```
 
 ## Fit Gaussian copula model from incomplete mixed observation
-
 ### Implementation
 Implementing our algorithm is easy, since it does not involve any tuning parameter. Just pass your observation into function *impute_mixedgc*.
 
 ```{r fit}
 fit = impute_mixedgc(X_obs)# takes around 20 secs
 ```
+
 
 ### Imputation evaluation
 We then evaluate the imputation error for each data type using the scaled mean absolute error (SMAE) proposed in our paper to measure the imputation error on columns in $I$:
@@ -69,6 +69,7 @@ mean(err_imp[6:10]) # SMAE across binary columns
 mean(err_imp[11:15]) # SMAE across ordinal columns
 ```
 
+
 ### Fitted copula correlation matrix
 You can also extract the fitted copula correlation matrix to describe the correlation relationship among columns. To evaluate the estimated correlation, we use relative error $||\hat{\Sigma}-\Sigma||_{F}/||\Sigma||_{F}$, where $\hat{\Sigma}$ is the estimated correlation matrix.
 
@@ -76,6 +77,7 @@ You can also extract the fitted copula correlation matrix to describe the correl
 # relative Frobeinus error of imputed correlation matrix
 norm(fit$R - Sigma, type = 'F')/norm(fit$R, type = 'F') 
 ```
+
 
 ### Monitor the convergence
 The likelihood function or objective function we are maximizing is hard to evaluate. We provide an approximation of the likelihood evaluation during iterations, which can be used to monitor the fitting process. If a Gaussian copula model is well fitted to the data, we expect to see monotonically increasing likelihood values during iterations. 
@@ -86,3 +88,4 @@ plot(fit$loglik, ylab = 'value', type = 'b', pch = 20,
 ```
 
 In empirical study, we find early stop can help improve the imputation performace sometimes, since it can help avoid overfitting. Our suggestion is to first implement with default tolerence threshold $1e-3$, which usually returns good performance in our experiments. With fitted model, one can check the provided likelihood values during iterations. If the likelihood values increase slowly for many iterations at last, we recommand fit again with larger tolerance threshold. In the future, we will add explicit regularization to our algorithm to avoid overfitting.
+
