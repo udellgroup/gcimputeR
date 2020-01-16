@@ -8,3 +8,6 @@ install_github("udellgroup/mixedgcImp")
 
 ## load the package
 library(mixedgcImp)
+
+## Vignette
+Some examples can be found under "doc/example_sim.html".
