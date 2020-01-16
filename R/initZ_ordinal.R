@@ -9,6 +9,7 @@
 initZ_ordinal = function(r_lower, r_upper, seed = 1){
   # input: truncated interval, mean and variance
   # output: for each entry, a random number following the truncated normal with mean 0 and var 1 is returned
+  # complexity: the number of observed ordinal entries
   n = dim(r_upper)[1]
   k = dim(r_upper)[2]
   Z = r_upper

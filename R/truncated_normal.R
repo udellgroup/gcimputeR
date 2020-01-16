@@ -15,6 +15,7 @@ mean_tnorm = function(mu,sigma,a,b){
 
 #' @rdname mean_tnorm
 #' @inheritParams mean_tnorm
+#' @export
 var_tnorm = function(mu,sigma,a,b){
   alpha = (a-mu)/sigma
   beta = (b-mu)/sigma
@@ -25,3 +26,4 @@ var_tnorm = function(mu,sigma,a,b){
     return(sigma^2 * (1 + (alpha*dnorm(alpha) - beta*dnorm(beta))/Z - ((dnorm(alpha) - dnorm(beta))/Z)^2))
   }
 }
+
