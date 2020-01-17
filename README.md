@@ -10,4 +10,4 @@ install_github("udellgroup/mixedgcImp")
 library(mixedgcImp)
 
 ## Vignette
-Some examples can be found under "doc/example_sim.html".
+Some examples can be found under "doc/example_sim.pdf".

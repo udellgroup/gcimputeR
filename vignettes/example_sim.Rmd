@@ -2,7 +2,7 @@
 title: "mixedgcImp Vignette"
 author: "Yuxuan Zhao"
 date: "11/16/2019"
-output: rmarkdown::html_vignette
+output: rmarkdown::pdf_document
 vignette: >
   %\VignetteIndexEntry{mixedgcImp Vignette}
   %\VignetteEngine{knitr::rmarkdown}
