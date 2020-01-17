@@ -1,0 +1,91 @@
+---
+title: "mixedgcImp Vignette"
+author: "Yuxuan Zhao"
+date: "11/16/2019"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{mixedgcImp Vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+\newcommand{\bX}{\mathbf{X}}
+\newcommand{\bZ}{\mathbf{Z}}
+\newcommand{\bx}{\mathbf{x}}
+\newcommand{\bz}{\mathbf{z}}
+\newcommand{\bigf}{\mathbf{f}}
+\newcommand{\bo}{\mathbf{0}}
+
+## Introduction
+The package _mixedgcImp_ is for imputing missing values of continuous and ordinal mixed dataset. The imputation is done by fitting a Gaussian copula model to the incomplete mixed observation. More details can be found in our paper [Zhao, Y., & Udell, M. (2019)](https://arxiv.org/pdf/1910.12845.pdf). In this vignette, we reproduce a simulation setting used in our paper. 
+
+## Simulate mixed type data observation
+We first generate rows of $\bZ\in \mathbb{R}^{n\times p}$ as $\bz^1,\ldots,\bz^{n}\overset{i.i.d.}{\sim} \mathcal{N}(\bo,\Sigma)$, then generate $\bX=\bigf(\bZ)$ through coordinate-wise monotone functions $\bigf$. $\bX$ consists of $n$ observations and $p$ variables. We let $p=15$ and $n=2000$ and randomly generate $\Sigma$. Use $\bigf$ such that $\bX_1,\ldots,\bX_5$ have exponential distributions with rate parameter $1/3$, $\bX_6,\ldots,\bX_{10}$ are binary and  $\bX_{11},\ldots,\bX_{15}$ are ordinal with 5 levels. Then we randomly remove $50\%$ of the entries of $\bX$.
+
+```{r simulate observation}
+library(mixedgcImp)
+library(MASS)
+set.seed(424)
+n = 2000
+p = 15
+Sigma = matrix(rnorm(p*p), nrow = p)
+Sigma = cov2cor(Sigma %*% t(Sigma)) # generate random correlation matrix
+Z = mvrnorm(n, mu = rep(0,p), Sigma = Sigma) # generate copula observation 
+X = Z # generate observation with specified marginals
+# five continuous columns with exponential marginal
+X[,1:5] = qexp(pnorm(Z[,1:5]), rate = 1/3) 
+# five binary columns
+for (i in 6:10) X[,i] = continuous2ordinal(Z[,i], k = 2) 
+# five ordinal columns with five levels
+for (i in 11:15) X[,i] = continuous2ordinal(Z[,i], k = 5) 
+ # mask 50% of the original observation
+X_obs = X
+loc = sample(1:prod(n*p), size = floor(prod(n*p)*0.5))
+X_obs[loc] = NA
+```
+
+## Fit Gaussian copula model from incomplete mixed observation
+### Implementation
+Implementing our algorithm is easy, since it does not involve any tuning parameter. Just pass your observation into function *impute_mixedgc*.
+
+```{r fit}
+fit = impute_mixedgc(X_obs)# takes around 20 secs
+```
+
+
+### Imputation evaluation
+We then evaluate the imputation error for each data type using the scaled mean absolute error (SMAE) proposed in our paper to measure the imputation error on columns in $I$:
+\[
+\mbox{SMAE}:=\frac{1}{|I|}\sum_{j\in I}\frac{||\hat {\bX_j} - \bX_j||_1}{||\bX^{\mbox{med}}_j - \bX_j||_1}
+\]
+where $\hat {\bX_j}, \bX^{\mbox{med}}_j$ are the imputed values and observed median for $j$-th column, respectively. For each data type, we compute the SMAE on corresponding columns. The estimator's SMAE is smaller than $1$ if it outperforms column median imputation. We now compute the SMAE for each data type.
+
+```{r evaluate imp}
+err_imp = cal_mae_scaled(xhat = fit$Ximp, xobs = X_obs, xtrue = X) # SMAE for each column
+mean(err_imp[1:5]) # SMAE across continuous columns
+mean(err_imp[6:10]) # SMAE across binary columns
+mean(err_imp[11:15]) # SMAE across ordinal columns
+```
+
+
+### Fitted copula correlation matrix
+You can also extract the fitted copula correlation matrix to describe the correlation relationship among columns. To evaluate the estimated correlation, we use relative error $||\hat{\Sigma}-\Sigma||_{F}/||\Sigma||_{F}$, where $\hat{\Sigma}$ is the estimated correlation matrix.
+
+```{r evaluate sigma}
+# relative Frobeinus error of imputed correlation matrix
+norm(fit$R - Sigma, type = 'F')/norm(fit$R, type = 'F') 
+```
+
+
+### Monitor the convergence
+The likelihood function or objective function we are maximizing is hard to evaluate. We provide an approximation of the likelihood evaluation during iterations, which can be used to monitor the fitting process. If a Gaussian copula model is well fitted to the data, we expect to see monotonically increasing likelihood values during iterations. 
+
+```{r monitor, fig.height = 4, fig.width = 6, fig.align = "center"}
+plot(fit$loglik, ylab = 'value', type = 'b', pch = 20,
+     xlab = 'iterations', main = 'approxiamted likelihood values achieved during iterations')
+```
+
+In empirical study, we find early stop can help improve the imputation performace sometimes, since it can help avoid overfitting. Our suggestion is to first implement with default tolerence threshold $1e-3$, which usually returns good performance in our experiments. With fitted model, one can check the provided likelihood values during iterations. If the likelihood values increase slowly for many iterations at last, we recommand fit again with larger tolerance threshold. In the future, we will add explicit regularization to our algorithm to avoid overfitting.
+

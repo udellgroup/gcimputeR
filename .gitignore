@@ -2,5 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
-doc
+.Rbuildignore
+mixedgcImp.Rproj
 Meta
