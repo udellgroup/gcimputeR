@@ -1,25 +1,38 @@
-#' compute mean absolute error
+#' compute the mean absolute error
 #'
-#' @param xhat imputed value vector
-#' @param xtrue true value vector
+#' @description compute the mean absolute error on entries which are missing in \code{xobs} but observed in \code{xtrue}
+#' @param xhat imputed data matrix or vector
+#' @param xobs incomplete observed data matrix or vector
+#' @param xtrue complete true data matrix or vector
 #' @param round whether round the values of \code{xhat} to integers
 #' @return computed error
 #' @export
-cal_mae = function(xhat,xtrue, round = FALSE){
-  xhat = as.numeric(xhat)
+cal_mae = function(xhat, xobs=NULL, xtrue, round = FALSE){
+  xhat = as.numeric(as.matrix(xhat))
+  xobs = as.numeric(as.matrix(xobs))
+  xtrue = as.numeric(as.matrix(xtrue))
   if(round) xhat = round(xhat)
-  mean(abs(xhat - xtrue))
+  if (is.null(xobs)) loc = 1:length(xhat) else loc = which(is.na(xobs) & (!is.na(xtrue)))
+  mean(abs(xhat[loc] - xtrue[loc]))
 }
 
-#' compute root mean squared error
+#' compute the root mean squared error
 #'
-#' @param xhat imputed value vector
-#' @param xtrue true value vector
+#' @description compute the root mean squared error on entries which are missing in \code{xobs} but observed in \code{xtrue}
+#' @param xhat imputed data matrix or vector
+#' @param xobs incomplete observed data matrix or vector
+#' @param xtrue complete true data matrix or vector
+#' @param relative whether divide the computed error by the Frobenius norm of \code{xtrue}
 #' @return computed error
 #' @export
-cal_rmse = function(xhat,xtrue){
-  xhat = as.numeric(xhat)
-  sqrt(mean((xhat - xtrue)^2))
+cal_rmse = function(xhat, xobs=NULL, xtrue, relative = TRUE){
+  xhat = as.numeric(as.matrix(xhat))
+  xobs = as.numeric(as.matrix(xobs))
+  xtrue = as.numeric(as.matrix(xtrue))
+  loc = which(is.na(xobs))
+  if (relative) scale = sqrt(mean((xtrue[loc])^2)) else scale = 1
+  if (is.null(xobs)) loc = 1:length(xhat) else loc = which(is.na(xobs) & (!is.na(xtrue)))
+  sqrt(mean((xhat[loc] - xtrue[loc])^2)) / scale
 }
 
 #' compute the scaled mean squared error(SMAE) scaled by the MAE of column
@@ -42,9 +55,8 @@ cal_mae_scaled = function(xhat, xobs, xtrue, round = FALSE){
   err.imp = numeric(p)
 
   for (j in 1:p){
-    ind = which(is.na(xobs[,j]) & (!is.na(xtrue[,j]))) # test points in dimension j
-    err.med = cal_mae(med[j], xtrue[ind,j])
-    err.imp[j] = cal_mae(xhat[ind,j], xtrue[ind,j], round = round)/err.med
+    err.med = cal_mae(xhat = med[j], xobs = xobs[,j], xtrue = xtrue[,j])
+    err.imp[j] = cal_mae(xhat = xhat[,j], xobs = xobs[,j], xtrue = xtrue[,j], round = round)/err.med
   }
   err.imp
 }

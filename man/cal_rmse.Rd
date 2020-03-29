@@ -2,18 +2,22 @@
 % Please edit documentation in R/error_fun.R
 \name{cal_rmse}
 \alias{cal_rmse}
-\title{compute root mean squared error}
+\title{compute the root mean squared error}
 \usage{
-cal_rmse(xhat, xtrue)
+cal_rmse(xhat, xobs = NULL, xtrue, relative = TRUE)
 }
 \arguments{
-\item{xhat}{imputed value vector}
+\item{xhat}{imputed data matrix or vector}
 
-\item{xtrue}{true value vector}
+\item{xobs}{incomplete observed data matrix or vector}
+
+\item{xtrue}{complete true data matrix or vector}
+
+\item{relative}{whether divide the computed error by the Frobenius norm of \code{xtrue}}
 }
 \value{
 computed error
 }
 \description{
-compute root mean squared error
+compute the root mean squared error on entries which are missing in \code{xobs} but observed in \code{xtrue}
 }

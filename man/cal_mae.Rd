@@ -2,14 +2,16 @@
 % Please edit documentation in R/error_fun.R
 \name{cal_mae}
 \alias{cal_mae}
-\title{compute mean absolute error}
+\title{compute the mean absolute error}
 \usage{
-cal_mae(xhat, xtrue, round = FALSE)
+cal_mae(xhat, xobs = NULL, xtrue, round = FALSE)
 }
 \arguments{
-\item{xhat}{imputed value vector}
+\item{xhat}{imputed data matrix or vector}
 
-\item{xtrue}{true value vector}
+\item{xobs}{incomplete observed data matrix or vector}
+
+\item{xtrue}{complete true data matrix or vector}
 
 \item{round}{whether round the values of \code{xhat} to integers}
 }
@@ -17,5 +19,5 @@ cal_mae(xhat, xtrue, round = FALSE)
 computed error
 }
 \description{
-compute mean absolute error
+compute the mean absolute error on entries which are missing in \code{xobs} but observed in \code{xtrue}
 }
