@@ -71,7 +71,7 @@ impute_mixedgc = function(X, maxit=100, eps=1e-3, stop.relative = TRUE, nlevels 
   }
   fit_em = em_mixedgc(Z_continuous = Z_continuous, r_lower = r_lower,
                       r_upper = r_upper, maxit = maxit, eps = eps, stop.relative = stop.relative)
-  R = fit_em$
+  R = fit_em$R
   # Impute X using Imputed Z
   Xnew.p = Ximp_transform(Z = fit_em$Zimp, X = X[, c(d_index,c_index)], d_index = d_index)
   # Back to original permuation
