@@ -55,7 +55,7 @@ cal_mae_scaled = function(xhat, xobs, xtrue, round = FALSE){
   err.imp = numeric(p)
 
   for (j in 1:p){
-    err.med = cal_mae(xhat = med[j], xobs = xobs[,j], xtrue = xtrue[,j])
+    err.med = cal_mae(xhat = rep(med[j],n), xobs = xobs[,j], xtrue = xtrue[,j])
     err.imp[j] = cal_mae(xhat = xhat[,j], xobs = xobs[,j], xtrue = xtrue[,j], round = round)/err.med
   }
   err.imp
