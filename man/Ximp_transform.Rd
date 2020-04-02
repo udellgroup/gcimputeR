@@ -4,14 +4,12 @@
 \alias{Ximp_transform}
 \title{Transform imputed Z matrix to original scale X}
 \usage{
-Ximp_transform(Z, X, r_upper, d_index)
+Ximp_transform(Z, X, d_index)
 }
 \arguments{
 \item{Z}{imputed Z matrix}
 
 \item{X}{original observation matrix}
-
-\item{r_upper}{Speficy data type. Either \code{continuous} or \code{ordinal}.}
 
 \item{d_index}{ordinal dimension indexes.}
 }

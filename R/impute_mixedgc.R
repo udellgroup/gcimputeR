@@ -50,48 +50,39 @@ impute_mixedgc = function(X, maxit=100, eps=1e-3, stop.relative = TRUE, nlevels 
   X = as.numeric(as.matrix(X))
   dim(X) = c(n,p)
 
-  # Do not allow empty row
-  if (any(apply(X, 1, function(x){sum(!is.na(x))}) == 0)) stop('remove empty row')
-
-  # find ordinal dimensions
-  d_index = which(apply(X, 2, function(x){length(unique(x))<=nlevels}))
+  if (any(apply(X, 1, function(x){sum(!is.na(x))}) == 0)) stop("remove empty row")
+  d_index = which(apply(X, 2, function(x) {length(unique(x)) <= nlevels}))
   k = length(d_index)
-  # find continuous dimensions
   c_index = setdiff(1:p, d_index)
-  # marginal transformation
-  if (k>0){
-    r = range_transform(matrix(X[,d_index], nrow = n), type = 'ordinal') # matrix of latent scalars corresponding to measured values
+    r = range_transform(matrix(X[, d_index], nrow = n), type = "ordinal")
     r_lower = r$r_lower
     r_upper = r$r_upper
     rm(r)
-  }else{
+  }
+  else {
     r_lower = NULL
     r_upper = NULL
   }
-
   if(k<p){
-    Z_continuous = range_transform(matrix(X[,c_index], nrow = n), type = 'continuous')$r_val
+    Z_continuous = range_transform(matrix(X[,c_index], nrow = n),type = "continuous")$r_val
   }else{
     Z_continuous = NULL
   }
-
-  # EM: estimate correlation matrix
-  fit_em = em_mixedgc(Z_continuous =  Z_continuous, r_lower = r_lower, r_upper=r_upper, maxit = maxit, eps = eps, stop.relative = stop.relative)
-  R = fit_em$R
-
+  fit_em = em_mixedgc(Z_continuous = Z_continuous, r_lower = r_lower,
+                      r_upper = r_upper, maxit = maxit, eps = eps, stop.relative = stop.relative)
+  R = fit_em$
   # Impute X using Imputed Z
-  Xnew.p = Ximp_transform(Z = fit_em$Zimp, X = X[,c(d_index,c_index)], r_upper = r_upper, d_index = d_index)
-
+  Xnew.p = Ximp_transform(Z = fit_em$Zimp, X = X[, c(d_index,c_index)], d_index = d_index)
   # Back to original permuation
   R1 = R
   Xnew = Xnew.p
-  if((k>0) & (k<p)){
-    R1[d_index,d_index] = R[1:k,1:k]
-    Xnew[,d_index] = Xnew.p[,1:k]
-    R1[d_index,c_index] = R[1:k,(k+1):p]
-    R1[c_index,d_index] = R[(k+1):p,1:k]
-    R1[c_index,c_index] = R[(k+1):p,(k+1):p]
-    Xnew[,c_index] = Xnew.p[,(k+1):p]
+  if ((k > 0) & (k < p)) {
+    R1[d_index, d_index] = R[1:k, 1:k]
+    Xnew[, d_index] = Xnew.p[, 1:k]
+    R1[d_index, c_index] = R[1:k, (k + 1):p]
+    R1[c_index, d_index] = R[(k + 1):p, 1:k]
+    R1[c_index, c_index] = R[(k + 1):p, (k + 1):p]
+    Xnew[, c_index] = Xnew.p[, (k + 1):p]
   }
-  return(list(Ximp=Xnew, R = R1, loglik=fit_em$loglik))
+  return(list(Ximp = Xnew, R = R1, loglik = fit_em$loglik))
 }

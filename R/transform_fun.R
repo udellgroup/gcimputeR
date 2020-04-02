@@ -50,13 +50,11 @@ range_transform = function(X, type){
 #' @description  Impute orginal incomplete observation using imputed \code{Z} matrix and marginal distribution information drawn from original observation \code{X}
 #' @param Z imputed Z matrix
 #' @param X original observation matrix
-#' @param r_upper Speficy data type. Either \code{continuous} or \code{ordinal}.
 #' @param d_index ordinal dimension indexes.
 #' @return Imputed data matrix
 #' @export
-Ximp_transform = function(Z, X, r_upper, d_index){
+Ximp_transform = function(Z, X, d_index){
   # for continuous, use default empirical quantile
-  # deal with smaller dimensional r_upper
   n = dim(Z)[1]
   p = dim(Z)[2]
   k = length(d_index)
@@ -66,14 +64,9 @@ Ximp_transform = function(Z, X, r_upper, d_index){
   if (k > 0){
     for (j in 1:k){
       miss_ind = which(is.na(X[,j]))
-      for (i in miss_ind){
-        indset = which(r_upper[,j] >= Z[i,j])
-        if (length(indset) == 0) Xnew[i,j] = max(X[,j], na.rm = TRUE)
-        else{
-          ind = indset[which.min(r_upper[indset,j])]
-          Xnew[i,j] = X[ind,j]
-        }
-      }
+      # decimal to integer 1 to observed length
+      xmis_loc = ceiling(pnorm(Z[miss_ind,j]) * (n-length(miss_ind)))
+      Xnew[miss_ind,j] = sort(X[-miss_ind,j])[xmis_loc]
     }
   }
 
@@ -87,6 +80,7 @@ Ximp_transform = function(Z, X, r_upper, d_index){
 
   Xnew
 }
+
 
 #' Transform a continuous vector to ordinal vector through cutoff function
 #'
