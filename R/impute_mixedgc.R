@@ -54,6 +54,7 @@ impute_mixedgc = function(X, maxit=100, eps=1e-3, stop.relative = TRUE, nlevels 
   d_index = which(apply(X, 2, function(x) {length(unique(x)) <= nlevels}))
   k = length(d_index)
   c_index = setdiff(1:p, d_index)
+  if (k > 0) {
     r = range_transform(matrix(X[, d_index], nrow = n), type = "ordinal")
     r_lower = r$r_lower
     r_upper = r$r_upper
