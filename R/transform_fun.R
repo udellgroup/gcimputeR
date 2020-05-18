@@ -39,8 +39,10 @@ range_transform = function(X, type){
       r_lower[,j] = fun(X[,j] - d[j])
       r_upper[,j] = fun(X[,j] + d[j])
     }
-    r_lower = qnorm(r_lower * n/(n+1))
-    r_upper = qnorm(r_upper * n/(n+1))
+    #r_lower = qnorm(r_lower * n/(n+1))
+    #r_upper = qnorm(r_upper * n/(n+1))
+    r_lower = qnorm(r_lower)
+    r_upper = qnorm(r_upper)
     return(list(r_lower=r_lower, r_upper=r_upper))
   }
 }

@@ -1,4 +1,4 @@
-#' Truncated normal mean and variance
+#' Truncated normal mean
 #'
 #' @description Compute the mean and variance of one dimensional truncated normal random variable
 #' @param mu Mean of the normal distribution
@@ -13,8 +13,13 @@ mean_tnorm = function(mu,sigma,a,b){
   mu + (dnorm(alpha) - dnorm(beta)) / Z * sigma
 }
 
-#' @rdname mean_tnorm
-#' @inheritParams mean_tnorm
+#' Truncated normal variance
+#'
+#' @description Compute the mean and variance of one dimensional truncated normal random variable
+#' @param mu Mean of the normal distribution
+#' @param sigma Standard deviation of the normal distribution
+#' @param a Left endpoint of the truncated interval
+#' @param b Right enpoint of the truncated interval
 #' @export
 var_tnorm = function(mu,sigma,a,b){
   alpha = (a-mu)/sigma

@@ -4,8 +4,15 @@
 \alias{em_mixedgc}
 \title{EM algorithm to fit Gaussian copula}
 \usage{
-em_mixedgc(Z_continuous, r_lower, r_upper, start = NULL, maxit = 100,
-  eps = 0.001, stop.relative = TRUE)
+em_mixedgc(
+  Z_continuous,
+  r_lower,
+  r_upper,
+  start = NULL,
+  maxit = 100,
+  eps = 0.001,
+  stop.relative = TRUE
+)
 }
 \arguments{
 \item{Z_continuous}{Continuous columns}

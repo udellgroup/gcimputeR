@@ -4,8 +4,7 @@
 \alias{impute_mixedgc}
 \title{Impute mixed type data with Gaussian copula}
 \usage{
-impute_mixedgc(X, maxit = 100, eps = 0.001, stop.relative = TRUE,
-  nlevels = 20)
+impute_mixedgc(X, maxit = 100, eps = 0.001, stop.relative = TRUE, nlevels = 20)
 }
 \arguments{
 \item{X}{A matrix or data.frame with missing values. Observed entry of \code{X} should either be numerical value or numerical ordinal level. Make sure there is no empty row nor character level in \code{X}.}
