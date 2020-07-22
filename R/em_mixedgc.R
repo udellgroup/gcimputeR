@@ -1,4 +1,4 @@
-#' EM algorithm to fit Gaussian copula
+  #' EM algorithm to fit Gaussian copula
 #'
 #' @description  fit the Gaussian copula model from incomplete mixed data
 #' @param Z_continuous Continuous columns

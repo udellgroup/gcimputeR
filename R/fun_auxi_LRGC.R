@@ -11,8 +11,15 @@ impute_init = function(Z_meanimp, rank, r_lower, r_upper){
   obj = svd(Z_meanimp, nv=rank)
   Z = obj$u[,1:rank] %*% diag(obj$d[1:rank]) %*% t(obj$v)
   #ind = which(Z>r_upper | Z<r_lower)
-  ind = union(which(Z>r_upper), which(Z<r_lower))
-  Z[ind] = Z_meanimp[ind]
+  if (is.null(r_lower)){
+    ind = union(which(Z>r_upper), which(Z<r_lower))
+    Z[ind] = Z_meanimp[ind]
+  }else{
+    k = dim(r_lower)[2]
+    ind = union(which(Z[,1:k]>r_upper), which(Z[,1:k]<r_lower))
+    Z[,1:k][ind] = Z_meanimp[,1:k][ind]
+  }
+
   Z
 }
 
