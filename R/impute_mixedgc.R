@@ -122,6 +122,7 @@ impute_mixedgc_ppca = function(X, rank, maxit=50, eps=1e-6, nlevels = 20,verbose
   # Do not allow empty row
   if (any(apply(X, 1, function(x){sum(!is.na(x))}) == 0)) stop('remove empty row')
   # Do not allow column with only one level
+  if (any(apply(X, 2, function(x){length(unique(x[!is.na(x)]))}) <= 1)) stop('remove column with only 0 or 1 unique value')
 
   # find ordinal dimensions
   d_index = which(apply(X, 2, function(x){length(unique(x))<=nlevels}))
