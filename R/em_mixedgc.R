@@ -125,6 +125,8 @@ em_mixedgc_ppca = function(rank, Z_continuous, r_lower, r_upper, start =NULL, ma
     Z_meanimp = impute_init(Z_meanimp, rank, r_upper, r_lower)
     ind = which(!is.na(Z_ordinal))
     Z_ordinal[ind] = Z_meanimp[ind]
+    Z = cbind(Z_ordinal, Z_continuous)
+    Z_meanimp[!is.na(Z)] = Z[!is.na(Z)]
 
     R = cor(Z_meanimp)
     est = svd(R)
