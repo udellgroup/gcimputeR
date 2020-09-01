@@ -11,7 +11,7 @@ impute_mixedgc_ppca(
   eps = 1e-06,
   nlevels = 20,
   verbose = FALSE,
-  early.stop = FALSE
+  early.stop = TRUE
 )
 }
 \arguments{
