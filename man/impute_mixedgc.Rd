@@ -4,7 +4,14 @@
 \alias{impute_mixedgc}
 \title{Impute mixed type data with Gaussian copula}
 \usage{
-impute_mixedgc(X, maxit = 100, eps = 0.001, stop.relative = TRUE, nlevels = 20)
+impute_mixedgc(
+  X,
+  maxit = 100,
+  eps = 0.001,
+  stop.relative = TRUE,
+  nlevels = 20,
+  runiter = 0
+)
 }
 \arguments{
 \item{X}{A matrix or data.frame with missing values. Observed entry of \code{X} should either be numerical value or numerical ordinal level. Make sure there is no empty row nor character level in \code{X}.}
@@ -16,6 +23,8 @@ impute_mixedgc(X, maxit = 100, eps = 0.001, stop.relative = TRUE, nlevels = 20)
 \item{stop.relative}{The algorithm stops when the fitted copula correlation matrix converges. The convergence is measureed using either relative Frobenius error when \code{TRUE} or maximum elementise error when \code{FALSE} by default}
 
 \item{nlevels}{A column which has larger number of unique values than \code{nlevels} will be classfied as continuous, otherwise ordinal.}
+
+\item{runiter}{When set as a positive integer, the algorithm will run \code{runiter} iterations exactly.}
 }
 \value{
 A list containing:

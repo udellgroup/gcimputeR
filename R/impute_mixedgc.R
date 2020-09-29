@@ -12,6 +12,7 @@ NULL
 #' @param eps Convergence threshold
 #' @param stop.relative The algorithm stops when the fitted copula correlation matrix converges. The convergence is measureed using either relative Frobenius error when \code{TRUE} or maximum elementise error when \code{FALSE} by default
 #' @param nlevels A column which has larger number of unique values than \code{nlevels} will be classfied as continuous, otherwise ordinal.
+#' @param runiter When set as a positive integer, the algorithm will run \code{runiter} iterations exactly.
 #' @details Impute the missing entries of a continuous and ordinal mixed data by fitting a Gaussian copula model to the data. The algorithm first scales original observation \code{X} to copula observation \code{Z} whose marginals are all standard normal. For continuous columns of \code{Z}, each observed entry records a value. While for ordinal columns of \code{Z}, each observed entry records an interval. The second step is to estimate the Gaussian copula correlation matrix using observed information of \code{Z}. With estimated correlation matrix, the third step imputes missing entries of \code{Z}. The last step imputes the missing entries of \code{X} based on the imputed entries of \code{Z}.
 #' @return A list containing:
 #' \describe{
@@ -44,7 +45,7 @@ NULL
 #' cal_mae_scaled(xhat = fit$Ximp, xobs = Xobs, xtrue = X)
 #'
 
-impute_mixedgc = function(X, maxit=100, eps=1e-3, stop.relative = TRUE, nlevels = 20){
+impute_mixedgc = function(X, maxit=100, eps=1e-3, stop.relative = TRUE, nlevels = 20, runiter = 0){
   n = dim(X)[1]
   p = dim(X)[2]
   X = as.numeric(as.matrix(X))
@@ -74,7 +75,7 @@ impute_mixedgc = function(X, maxit=100, eps=1e-3, stop.relative = TRUE, nlevels 
     Z_continuous = NULL
   }
   fit_em = em_mixedgc(Z_continuous = Z_continuous, r_lower = r_lower,
-                      r_upper = r_upper, maxit = maxit, eps = eps, stop.relative = stop.relative)
+                      r_upper = r_upper, maxit = maxit, eps = eps, stop.relative = stop.relative, runiter=runiter)
   R = fit_em$R
   # Impute X using Imputed Z
   Xnew.p = Ximp_transform(Z = fit_em$Zimp, X = X[, c(d_index,c_index)], d_index = d_index)

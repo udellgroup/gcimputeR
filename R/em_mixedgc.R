@@ -8,6 +8,7 @@
 #' @param maxit maximum number of iterations
 #' @param eps Convergence threshold
 #' @param stop.relative Use relative Frobeinus error when \code{TRUE} and maximum elementise error when \code{FALSE} by default
+#' @param runiter When set as a positive integer, the algorithm will run \code{runiter} iterations exactly.
 #' @return A list containing fitted copula correlation matrix, the likelihood(objective function), Z matrix with updated ordinal entries and a complete imputed Z matrix.
 #' \describe{
 #'   \item{\code{R}}{Fitted copula correlation matrix}
@@ -18,7 +19,7 @@
 #' @author Yuxuan Zhao, \email{yz2295@cornell.edu} and Madeleine Udell, \email{udell@cornell.edu}
 #' @references Zhao, Y., & Udell, M. (2019). Missing Value Imputation for Mixed Data Through Gaussian Copula. arXiv preprint arXiv:1910.12845.
 #' @export
-em_mixedgc = function(Z_continuous, r_lower, r_upper, start =NULL, maxit=100, eps=1e-3, stop.relative = TRUE){
+em_mixedgc = function(Z_continuous, r_lower, r_upper, start =NULL, maxit=100, eps=1e-3, stop.relative = TRUE,runiter=0){
   if (is.null(Z_continuous)){
     p = dim(r_upper)[2]
     k = p
@@ -58,12 +59,17 @@ em_mixedgc = function(Z_continuous, r_lower, r_upper, start =NULL, maxit=100, ep
     Z = est_iter$Zobs
     R1 = cov2cor(est_iter$sigma)
     loglik = c(loglik, est_iter$loglik)
-    if (stop.relative) err = norm(R1-R, type = 'F')/norm(R, type = 'F') else err = max(abs(R1-R))
-    if (err<eps) break
-    if (l > maxit){
-      warning('Max iter reached in EM')
-      break
+    if (runiter==0){
+      if (stop.relative) err = norm(R1-R, type = 'F')/norm(R, type = 'F') else err = max(abs(R1-R))
+      if (err<eps) break
+      if (l > maxit){
+        warning('Max iter reached in EM')
+        break
+      }
+    }else{
+      if (l>runiter) break
     }
+
     R = R1
   }
 

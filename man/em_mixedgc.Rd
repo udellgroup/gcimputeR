@@ -11,7 +11,8 @@ em_mixedgc(
   start = NULL,
   maxit = 100,
   eps = 0.001,
-  stop.relative = TRUE
+  stop.relative = TRUE,
+  runiter = 0
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ em_mixedgc(
 \item{eps}{Convergence threshold}
 
 \item{stop.relative}{Use relative Frobeinus error when \code{TRUE} and maximum elementise error when \code{FALSE} by default}
+
+\item{runiter}{When set as a positive integer, the algorithm will run \code{runiter} iterations exactly.}
 }
 \value{
 A list containing fitted copula correlation matrix, the likelihood(objective function), Z matrix with updated ordinal entries and a complete imputed Z matrix.
