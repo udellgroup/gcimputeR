@@ -1,8 +1,9 @@
 # mixedgcImp
 This R package provides implemention to fit a full rank Gaussian copula model [1] or low rank Gaussian copula model [2], on continuous, ordinal and binary mixed data with missing values. The fitted model can be used for missing value imputation and correlation structure learning [1,2].
+
 Online and mini-batch implementation of Gaussian copula [3] are now available in [Python](https://github.com/udellgroup/online_mixed_gc_imp). R implementation to come...
 
-## install  and load the package
+## Install  and load the package
 library(devtools)
 install_github("udellgroup/mixedgcImp")
 library(mixedgcImp)
