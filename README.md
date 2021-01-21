@@ -5,7 +5,9 @@ Online and mini-batch implementation of Gaussian copula [3] are now available in
 
 ## Install  and load the package
 library(devtools)
+
 install_github("udellgroup/mixedgcImp")
+
 library(mixedgcImp)
 
 ## Vignette
