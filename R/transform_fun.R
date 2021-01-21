@@ -68,6 +68,9 @@ Ximp_transform = function(Z, X, d_index){
       miss_ind = which(is.na(X[,j]))
       # decimal to integer 1 to observed length
       xmis_loc = ceiling(pnorm(Z[miss_ind,j]) * (n-length(miss_ind)))
+      # If extremely small value appear in Z[miss_ind, ] such that xmis_loc contains 0,
+      # replace it with 1 (impute using the smallest observation)
+      xmis_loc[xmis_loc == 0] = 1
       Xnew[miss_ind,j] = sort(X[-miss_ind,j])[xmis_loc]
     }
   }
