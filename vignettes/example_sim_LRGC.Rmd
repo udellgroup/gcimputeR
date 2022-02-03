@@ -1,10 +1,10 @@
 ---
-title: "mixedgcImp Vignette on low rank Gaussian copula with quantified uncertainty"
+title: "gcimputeR Vignette on low rank Gaussian copula with quantified uncertainty"
 author: "Yuxuan Zhao"
 date: "9/1/2020"
 output: rmarkdown::pdf_document
 vignette: >
-  %\VignetteIndexEntry{mixedgcImp Vignette on low rank Gaussian copula with quantified uncertainty}
+  %\VignetteIndexEntry{gcimputeR Vignette on low rank Gaussian copula with quantified uncertainty}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
@@ -45,7 +45,7 @@ We generate the high rank continuous data matrix $\bX\in \mathbb{R}^{500\times20
 Simply specify the rank to the function call. 
 
 ```{r fitting}
-library(mixedgcImp)
+library(gcimputeR)
 est = impute_mixedgc_ppca(X_obs, rank = 10) # around 8 secs
 print("Normalized root mean squared error (NRMSE) is: ")
 print(sqrt(mean((est$Ximp[loc] - X[loc])^2))/sqrt(mean(X[loc]^2)))
