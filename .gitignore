@@ -3,9 +3,8 @@
 .RData
 .Ruserdata
 .Rbuildignore
-mixedgcImp.Rproj
+gcimputeR.Rproj
+.DS_Store
 
-doc
 Meta
-/doc/
 /Meta/
