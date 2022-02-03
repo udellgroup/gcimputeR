@@ -1,10 +1,10 @@
 ---
-title: "mixedgcImp Vignette"
+title: "gcimputeR Vignette"
 author: "Yuxuan Zhao"
 date: "11/16/2019"
 output: rmarkdown::pdf_document
 vignette: >
-  %\VignetteIndexEntry{mixedgcImp Vignette}
+  %\VignetteIndexEntry{gcimputeR Vignette}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
@@ -19,13 +19,13 @@ knitr::opts_chunk$set(echo = TRUE)
 \newcommand{\bo}{\mathbf{0}}
 
 ## Introduction
-The package _mixedgcImp_ is for imputing missing values of continuous and ordinal mixed dataset. The imputation is done by fitting a Gaussian copula model to the incomplete mixed observation. More details can be found in our paper [Zhao, Y., & Udell, M. (2019)](https://arxiv.org/pdf/1910.12845.pdf). In this vignette, we reproduce a simulation setting used in our paper. 
+The package _gcimputeR_ is for imputing missing values of continuous and ordinal mixed dataset. The imputation is done by fitting a Gaussian copula model to the incomplete mixed observation. More details can be found in our paper [Zhao, Y., & Udell, M. (2019)](https://arxiv.org/pdf/1910.12845.pdf). In this vignette, we reproduce a simulation setting used in our paper. 
 
 ## Simulate mixed type data observation
 We first generate rows of $\bZ\in \mathbb{R}^{n\times p}$ as $\bz^1,\ldots,\bz^{n}\overset{i.i.d.}{\sim} \mathcal{N}(\bo,\Sigma)$, then generate $\bX=\bigf(\bZ)$ through coordinate-wise monotone functions $\bigf$. $\bX$ consists of $n$ observations and $p$ variables. We let $p=15$ and $n=2000$ and randomly generate $\Sigma$. Use $\bigf$ such that $\bX_1,\ldots,\bX_5$ have exponential distributions with rate parameter $1/3$, $\bX_6,\ldots,\bX_{10}$ are binary and  $\bX_{11},\ldots,\bX_{15}$ are ordinal with 5 levels. Then we randomly remove $50\%$ of the entries of $\bX$.
 
 ```{r simulate observation}
-library(mixedgcImp)
+library(gcimputeR)
 library(MASS)
 set.seed(410)
 n = 2000

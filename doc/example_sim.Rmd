@@ -27,7 +27,7 @@ We first generate rows of $\bZ\in \mathbb{R}^{n\times p}$ as $\bz^1,\ldots,\bz^{
 ```{r simulate observation}
 library(mixedgcImp)
 library(MASS)
-set.seed(424)
+set.seed(410)
 n = 2000
 p = 15
 Sigma = matrix(rnorm(p*p), nrow = p)

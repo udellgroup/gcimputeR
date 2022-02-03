@@ -1,4 +1,4 @@
-Package: mixedgcImp
+Package: gcimputeR
 Type: Package
 Title: Missing value imputation for mixed data through Gaussian copula
 Version: 0.1.0
