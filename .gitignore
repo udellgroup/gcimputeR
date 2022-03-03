@@ -5,6 +5,6 @@
 .Rbuildignore
 gcimputeR.Rproj
 .DS_Store
-
 Meta
 /Meta/
+Development_tests/

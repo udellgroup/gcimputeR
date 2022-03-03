@@ -87,31 +87,4 @@ Ximp_transform = function(Z, X, d_index){
 }
 
 
-#' Transform a continuous vector to ordinal vector through cutoff function
-#'
-#' @description  Discretize continuous x to ordinal z with \code{k} levels. The cutoffs are either given or randomly generated.
-#' @param x continuous vector
-#' @param k number of ordinal levels. Generated ordinal vector takes value from \code{0,\ldots,k-1}
-#' @param cutoff cutoffs. Setting it as \code{NULL} will generate random cutoffs.
-#' @return an ordinal vector.
-#' @export
-continuous2ordinal = function(x, k = 2, cutoff = NULL){
-  # if cutoff is not provided, a random cutoff sequence will be generated.
-  if (k == 2){
-    if (is.null(cutoff)){
-      repeat{
-        cutoff = sample(x,1)
-        q = quantile(x, c(0.1,0.9))
-        if ((cutoff>q[1]) & (cutoff<q[2])) break # make sure each class has at least 10% data
-      }
-    }
-    x = (x >= cutoff)
-  }
-  else{
-    if (is.null(cutoff)){
-      cutoff = seq(min(x)-0.1 *sd(x), max(x) + 0.1*sd(x), length.out = k+1)
-    }
-    x = cut(x, cutoff, labels = FALSE, include.lowest = TRUE)
-  }
-  x
-}
+

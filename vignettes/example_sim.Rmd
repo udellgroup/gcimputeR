@@ -28,22 +28,10 @@ We first generate rows of $\bZ\in \mathbb{R}^{n\times p}$ as $\bz^1,\ldots,\bz^{
 library(gcimputeR)
 library(MASS)
 set.seed(410)
-n = 2000
-p = 15
-Sigma = matrix(rnorm(p*p), nrow = p)
-Sigma = cov2cor(Sigma %*% t(Sigma)) # generate random correlation matrix
-Z = mvrnorm(n, mu = rep(0,p), Sigma = Sigma) # generate copula observation 
-X = Z # generate observation with specified marginals
-# five continuous columns with exponential marginal
-X[,1:5] = qexp(pnorm(Z[,1:5]), rate = 1/3) 
-# five binary columns
-for (i in 6:10) X[,i] = continuous2ordinal(Z[,i], k = 2) 
-# five ordinal columns with five levels
-for (i in 11:15) X[,i] = continuous2ordinal(Z[,i], k = 5) 
+Sigma = generate_sigma(p <- 15) # generate random correlation matrix
+X = generate_mixed_from_gc(Sigma, n <- 2000)
  # mask 50% of the original observation
-X_obs = X
-loc = sample(1:prod(n*p), size = floor(prod(n*p)*0.5))
-X_obs[loc] = NA
+X_obs = mask_MCAR(X, mask_fraction = 0.5)
 ```
 
 ## Fit Gaussian copula model from incomplete mixed observation
