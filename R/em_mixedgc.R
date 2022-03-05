@@ -7,8 +7,9 @@
 #' @param start Initial value of copula correlation matrix. Default is \code{NULL}.
 #' @param maxit maximum number of iterations
 #' @param eps Convergence threshold
-#' @param stop.relative Use relative Frobeinus error when \code{TRUE} and maximum elementise error when \code{FALSE} by default
 #' @param runiter When set as a positive integer, the algorithm will run \code{runiter} iterations exactly.
+#' @param trunc_method Method for evaluating truncated normal moments
+#' @param n_sample Number of samples to use for sampling methods for evaluating truncated normal moments
 #' @return A list containing fitted copula correlation matrix, the likelihood(objective function), Z matrix with updated ordinal entries and a complete imputed Z matrix.
 #' \describe{
 #'   \item{\code{R}}{Fitted copula correlation matrix}
@@ -19,7 +20,8 @@
 #' @author Yuxuan Zhao, \email{yz2295@cornell.edu} and Madeleine Udell, \email{udell@cornell.edu}
 #' @references Zhao, Y., & Udell, M. (2019). Missing Value Imputation for Mixed Data Through Gaussian Copula. arXiv preprint arXiv:1910.12845.
 #' @export
-em_mixedgc = function(Z_continuous, r_lower, r_upper, start =NULL, maxit=100, eps=1e-3, stop.relative = TRUE,runiter=0){
+em_mixedgc = function(Z_continuous, r_lower, r_upper,
+                      start =NULL, maxit=100, eps=1e-3, runiter=0, trunc_method='Iterative', n_sample=5000){
   if (is.null(Z_continuous)){
     p = dim(r_upper)[2]
     k = p
@@ -55,12 +57,12 @@ em_mixedgc = function(Z_continuous, r_lower, r_upper, start =NULL, maxit=100, ep
   loglik = NULL
   repeat{
     l = l+1
-    est_iter = em_mixedgc_iter(Z, r_lower, r_upper, rep(0,p), R)
+    est_iter = em_mixedgc_iter(Z, r_lower, r_upper, rep(0,p), R, trunc_method = trunc_method, n_sample=n_sample)
     Z = est_iter$Zobs
     R1 = cov2cor(est_iter$sigma)
     loglik = c(loglik, est_iter$loglik)
     if (runiter==0){
-      if (stop.relative) err = norm(R1-R, type = 'F')/norm(R, type = 'F') else err = max(abs(R1-R))
+      err = norm(R1-R, type = 'F')/norm(R, type = 'F')
       if (err<eps) break
       if (l > maxit){
         warning('Max iter reached in EM')

@@ -4,7 +4,7 @@
 \alias{initZ_ordinal}
 \title{Simulate random value for observed ordinal entires of \code{Z}}
 \usage{
-initZ_ordinal(r_lower, r_upper, seed = 1)
+initZ_ordinal(r_lower, r_upper, seed = 1, method = "univariate_mean")
 }
 \arguments{
 \item{r_lower}{Lower boundary of truncated intervals for ordinal columns}
@@ -12,6 +12,8 @@ initZ_ordinal(r_lower, r_upper, seed = 1)
 \item{r_upper}{Upper boundary of truncated intervals for ordinal columns}
 
 \item{seed}{random seed used. Default is 1}
+
+\item{method}{method for initializing the mean}
 }
 \value{
 A matrix containing ordinal columns of \code{Z} whose entries are randomly generated but lie in the truncated interval.

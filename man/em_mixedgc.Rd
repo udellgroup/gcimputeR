@@ -11,8 +11,9 @@ em_mixedgc(
   start = NULL,
   maxit = 100,
   eps = 0.001,
-  stop.relative = TRUE,
-  runiter = 0
+  runiter = 0,
+  trunc_method = "Iterative",
+  n_sample = 5000
 )
 }
 \arguments{
@@ -28,9 +29,11 @@ em_mixedgc(
 
 \item{eps}{Convergence threshold}
 
-\item{stop.relative}{Use relative Frobeinus error when \code{TRUE} and maximum elementise error when \code{FALSE} by default}
-
 \item{runiter}{When set as a positive integer, the algorithm will run \code{runiter} iterations exactly.}
+
+\item{trunc_method}{Method for evaluating truncated normal moments}
+
+\item{n_sample}{Number of samples to use for sampling methods for evaluating truncated normal moments}
 }
 \value{
 A list containing fitted copula correlation matrix, the likelihood(objective function), Z matrix with updated ordinal entries and a complete imputed Z matrix.

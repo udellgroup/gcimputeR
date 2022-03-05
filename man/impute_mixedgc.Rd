@@ -6,11 +6,12 @@
 \usage{
 impute_mixedgc(
   X,
-  maxit = 100,
-  eps = 0.001,
-  stop.relative = TRUE,
+  maxit = 50,
+  eps = 0.01,
   nlevels = 20,
-  runiter = 0
+  runiter = 0,
+  trunc_method = "Iterative",
+  n_sample = 5000
 )
 }
 \arguments{
@@ -20,11 +21,13 @@ impute_mixedgc(
 
 \item{eps}{Convergence threshold}
 
-\item{stop.relative}{The algorithm stops when the fitted copula correlation matrix converges. The convergence is measureed using either relative Frobenius error when \code{TRUE} or maximum elementise error when \code{FALSE} by default}
-
 \item{nlevels}{A column which has larger number of unique values than \code{nlevels} will be classfied as continuous, otherwise ordinal.}
 
 \item{runiter}{When set as a positive integer, the algorithm will run \code{runiter} iterations exactly.}
+
+\item{trunc_method}{Method for evaluating truncated normal moments}
+
+\item{n_sample}{Number of samples to use for sampling methods for evaluating truncated normal moments}
 }
 \value{
 A list containing:

@@ -1,3 +1,22 @@
+#' Compute multivariate truncated normal mean and var
+#'
+#' @description  iteratively compute the conditional mean and var at observed ordinal entries
+#' @param z An incomplete row
+#' @param lower Lower boundary of truncated intervals for ordinal columns
+#' @param upper Upper boundary of truncated intervals for ordinal columns
+#' @param obs_indices Boolean vector where \code{TRUE} indicates observed entries.
+#' @param ord_obs_indices Boolean vector where \code{TRUE} indicates observed ordinal entries.
+#' @param ord_in_obs Boolean vector where \code{TRUE} indicates ordinal entries.
+#' @param obs_in_ord Boolean vector where \code{TRUE} indicates observed ordinal entries.
+#' @param f_sigma_oo_inv_z A function computing The matrix-vector product Sigma_{obs, obs}^{-1} * z_{obs}
+#' @param sigma_oo_inv_diag The diagonal of Sigma_{obs, obs}^{-1}
+#' @param n_update The number of full cycle iterations to conduct
+#' @return A list containing
+#' \describe{
+#'   \item{\code{mean}}{The updated mean at observed entries }
+#'   \item{\code{var}}{The log-likelihood achieved during iteration.}
+#' }
+#' @export
 update_z_row_ord <- function(z, lower, upper,
                              obs_indices,
                              ord_obs_indices, ord_in_obs, obs_in_ord,
@@ -43,40 +62,106 @@ update_z_row_ord <- function(z, lower, upper,
   list('mean'=z, 'var'=var_ordinal)
 }
 
-est_z_row_ord <- function(z_obs, lower, upper, obs_indices, ord_obs_indices, ord_in_obs, sigma_oo,
+#' Compute multivariate truncated normal mean and var
+#'
+#' @description  iteratively compute the conditional mean and var at observed ordinal entries
+#' @param z An incomplete row
+#' @param lower Lower boundary of truncated intervals for ordinal columns
+#' @param upper Upper boundary of truncated intervals for ordinal columns
+#' @param obs_indices Boolean vector where \code{TRUE} indicates observed entries.
+#' @param ord_obs_indices Boolean vector where \code{TRUE} indicates observed ordinal entries.
+#' @param ord_in_obs Boolean vector where \code{TRUE} indicates ordinal entries.
+#' @param obs_in_ord Boolean vector where \code{TRUE} indicates observed ordinal entries.
+#' @param sigma_oo Sigma_{obs, obs}
+#' @param method Explicit derivation `Explicit` or sampling method `TruncatedNormal`
+#' @param n_sample Number of MC samples to use
+#' @return A list containing
+#' \describe{
+#'   \item{\code{mean}}{The updated mean at observed entries }
+#'   \item{\code{var}}{The log-likelihood achieved during iteration.}
+#' }
+#' @export
+est_z_row_ord <- function(z, lower, upper,
+                          obs_indices, ord_obs_indices, obs_in_ord, ord_in_obs, sigma_oo,
                           method='Explicit', n_sample=5000){
   # need to determine the conditional mean and cov of observed ordinal given observed continuous
+  z_obs = z[obs_indices]
+  p = length(z)
   if (sum(obs_indices)>1 & any(ord_obs_indices)){
     cont_in_obs = !ord_in_obs
-    sigma_ord_ord = sigma_oo[ord_in_obs, ord_in_obs]
-    sigma_cont_ord = sigma_oo[cont_in_obs, ord_in_obs]
-    sigma_cont_cont = sigma_oo[cont_in_obs, cont_in_obs]
+    sigma_ord_ord = sigma_oo[ord_in_obs, ord_in_obs, drop=FALSE]
 
-    tot_m = cbind(matrix(z_obs[cont_in_obs], ncol = 1), sigma_cont_ord)
-    sol_m = solve(sigma_cont_cont, tot_m)
+    if (any(cont_in_obs)){
+      sigma_cont_ord = sigma_oo[cont_in_obs, ord_in_obs, drop=FALSE]
+      sigma_cont_cont = sigma_oo[cont_in_obs, cont_in_obs, drop=FALSE]
 
-    cond_mean = t(sigma_cont_ord) %*% sol_m[,1]
-    cond_cov = sigma_ord_ord - t(sigma_cont_ord) %*% sol_m[,-1]
+      tot_m = cbind(z_obs[cont_in_obs], sigma_cont_ord)
+      sol_m = solve(sigma_cont_cont, tot_m)
 
-    out = get_trunc_2dmoments(cond_mean, cond_cov, lower, upper, method=method, n_sample=n_sample)
+      cond_mean = t(sigma_cont_ord) %*% sol_m[,1]
+      cond_cov = sigma_ord_ord - t(sigma_cont_ord) %*% sol_m[,-1,drop=FALSE]
+    }else{
+      cond_mean = numeric(sum(ord_obs_indices))
+      cond_cov = sigma_ord_ord
+    }
+
+    if (!isSymmetric(cond_cov)){
+      diff = max(abs(cond_cov - t(cond_cov)))
+      if (diff > 1e-4) print(paste('max diff:', diff))
+      cond_cov = (cond_cov + t(cond_cov))/2
+    }
+
+    cond_mean = c(cond_mean)
+    lower_use = lower[obs_in_ord]
+    upper_use = upper[obs_in_ord]
+    lmu = length(cond_mean)
+    ll = length(lower_use)
+    lu = length(upper_use)
+    if (lmu != ncol(cond_cov) | lmu != ll | lmu != lu){
+      stop('inconsistent shapes')
+    }
+    out_ = get_trunc_2dmoments(c(cond_mean), cond_cov,
+                               lower_use, upper_use,
+                               method=method, n_sample=n_sample)
+    z_new = z
+    z_new[ord_obs_indices] = out_$mean
+    cov_all = matrix(0, p, p)
+    cov_all[ord_obs_indices, ord_obs_indices] = out_$cov
+    out = list('mean' = z_new, 'cov'=cov_all, 'var'=NULL)
   }else{
-    out = NULL
+    out = list('mean' = z, 'var' = numeric(p))
   }
 
   # return: list with names 'mean' and 'cov' or NULL
   out
 }
 
+
+#' First two moments of truncated multivariate normal
+#'
+#' @description  compute multivariate truncated mean vector and covariance matrix
+#' @param mean Normal mean vector
+#' @param cov Normal covariance matrix
+#' @param lower Lower boundary of truncated intervals
+#' @param upper Upper boundary of truncated intervals
+#' @param method Method to use
+#' @param n_sample Number of samples to use for sampling methods
+#' @return A list containing
+#' \describe{
+#'   \item{\code{mean}}{Mean vector}
+#'   \item{\code{cov}}{Covariance matrix}
+#' }
+#' @export
 get_trunc_2dmoments <- function(mean, cov, lower, upper, method='Explicit', n_sample=5000){
-  if (length(mean) != ncol(cov)){
-    print(length(mean))
-    print(dim(cov))
-    stop('inconsistent shapes')
-  }
   p = length(mean)
+  if (p==1){
+    out = moments_truncnorm(c(mean), c(cov), c(lower), c(upper))
+    return(list(mean = out$mean, cov = matrix(out$var, 1, 1)))
+  }
   switch (method,
           'TruncatedNormal' = {
             z = TruncatedNormal::rtmvnorm(n = n_sample, mu = mean, sigma = cov, lb = lower, ub = upper)
+            if (length(dim(z)) != 2 | ncol(z)!=p) stop('unexpected sample dimension')
             list('mean' = colMeans(z), 'cov' = cov(z))
           },
           'Explicit' = {

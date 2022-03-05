@@ -6,6 +6,9 @@
 #' @param r_upper Upper boundary of truncated intervals for ordinal columns
 #' @param mu Mean vector. Default setting forces it to be \code{0}.
 #' @param sigma Covariance matrix.
+#' @param n_update The number of updates to conduct when `method='Iterative'`
+#' @param trunc_method Method for evaluating truncated normal moments
+#' @param n_sample Number of samples to use for sampling methods for evaluating truncated normal moments
 #' @return A list containing fitted copula correlation matrix, the likelihood(objective function), Z matrix with updated ordinal entries and a complete imputed Z matrix.
 #' \describe{
 #'   \item{\code{R}}{Fitted copula correlation matrix}
@@ -14,78 +17,115 @@
 #'   \item{\code{Zimp}}{Complete \code{Z} with observed entries the same as \code{Z} and missing entries imputed}
 #' }
 #' @author Yuxuan Zhao, \email{yz2295@cornell.edu} and Madeleine Udell, \email{udell@cornell.edu}
-#' @references Zhao, Y., & Udell, M. (2019). Missing Value Imputation for Mixed Data Through Gaussian Copula. arXiv preprint arXiv:1910.12845.
+#' @references Zhao, Y., & Udell, M. (2020). Missing Value Imputation for Mixed Data Through Gaussian Copula. KDD 2020.
 #' @export
-em_mixedgc_iter = function(Z, r_lower, r_upper, mu = rep(0, dim(Z)[2]), sigma){
+em_mixedgc_iter = function(Z, r_lower, r_upper, mu = rep(0, ncol(Z)), sigma, n_update=1,
+                           trunc_method='Iterative', n_sample=5000){
   # input: "Z" matrix with missing values
   n = dim(Z)[1]
   p = dim(Z)[2]
   if (is.null(r_lower)) k = 0 else k = dim(r_lower)[2]
-  C = matrix(0, nrow = p, ncol = p)
   negloglik = 0
-  Zimp = Z
+  Zimp = matrix(NA, n, p)
+  C = matrix(0, nrow = p, ncol = p)
 
   for (i in 1:n){
-    index_o = which(!is.na(Z[i,]))
-    index_m = setdiff(1:p, index_o)
-    d_in_o = which(index_o <= k)
-    index_d = index_o[d_in_o]
+    missing_indices = is.na(Z[i,])
+    obs_indices = !missing_indices
 
-    sigma11 = matrix(sigma[index_o,index_o], nrow = length(index_o))
-    sigma12 = matrix(sigma[index_o,index_m], nrow = length(index_o))
-    sigma22 = matrix(sigma[index_m,index_m], nrow = length(index_m))
+    # TODO: ord_indices should be input later after canceling the ordering permutation
+    ord_indices = (1:p) <= k
+    ord_obs_indices = ord_indices & obs_indices
+    ord_in_obs = ord_obs_indices[obs_indices]
+    obs_in_ord = ord_obs_indices[ord_indices]
 
-    ans = solve(sigma11, cbind(diag(length(index_o)), sigma12))
-    sigma11_inv = ans[,1:length(index_o)]
-    J21 = t(matrix(ans[,-(1:length(index_o))], nrow = length(index_o)))
+    sigma_oo = sigma[obs_indices,obs_indices, drop=FALSE]
+    sigma_om = sigma[obs_indices,missing_indices, drop=FALSE]
+    sigma_mm = sigma[missing_indices,missing_indices, drop=FALSE]
 
-    var_ordinal = numeric(p)
+    n_obs = sum(obs_indices)
+    if (any(missing_indices)){
+      ans = solve(sigma_oo, cbind(diag(n_obs), sigma_om))
+      sigma_oo_inv = ans[,1:n_obs, drop=FALSE]
+      J_mo = t(ans[,-(1:n_obs), drop=FALSE])
+    }else{
+      sigma_oo_inv = solve(sigma_oo)
+      J_mo = NULL
+    }
 
     # ORDINAL DIMENSION
     # Only implement when there is at least one observed ordinal dimension(to be imputed)
     # and another observed dimension (ordinal or continuous) used as information to impute
-    if (length(index_o)>1 & length(index_d) >=1){
-      for (j in index_d){
-        j_in_o = which(index_o == j)
-        ind_j = setdiff(index_o, j)
+    switch (trunc_method,
+            'Iterative' = {
+              f_sigma_oo_inv_z <- function(zobs){sigma_oo_inv %*% zobs}
+              out <- update_z_row_ord(Z[i,], r_lower[i,], r_upper[i,],
+                                      obs_indices = obs_indices,
+                                      ord_obs_indices = ord_obs_indices,
+                                      ord_in_obs = ord_in_obs,
+                                      obs_in_ord = obs_in_ord,
+                                      f_sigma_oo_inv_z = f_sigma_oo_inv_z,
+                                      sigma_oo_inv_diag = diag(sigma_oo_inv),
+                                      n_update = n_update
+              )
+            },
+            'Explicit' = {
+              out <- est_z_row_ord(Z[i,], r_lower[i,], r_upper[i,],
+                                   obs_indices = obs_indices,
+                                   ord_obs_indices = ord_obs_indices,
+                                   ord_in_obs = ord_in_obs,
+                                   obs_in_ord = obs_in_ord,
+                                   sigma_oo = sigma_oo,
+                                   method = 'Explicit'
+                                   )
+            },
+            'Sampling_TN' = {
+              out <- est_z_row_ord(Z[i,], r_lower[i,], r_upper[i,],
+                                   obs_indices = obs_indices,
+                                   ord_obs_indices = ord_obs_indices,
+                                   ord_in_obs = ord_in_obs,
+                                   obs_in_ord = obs_in_ord,
+                                   sigma_oo = sigma_oo,
+                                   method = 'TruncatedNormal',
+                                   n_sample = n_sample
+              )
+            },
+            stop('invalid trunc_method')
+    )
 
-        v = sigma11_inv[,j_in_o]
-        sigma_ij = 1/v[j_in_o]
-        mu_ij = mu[j] + c(t(v[-j_in_o]) %*% (Z[i,ind_j]-mu[ind_j])) * (-sigma_ij)
-
-        mu_ij_new = mean_tnorm(mu_ij, sqrt(sigma_ij), a = r_lower[i,j], b = r_upper[i,j])
-        var_ij_new = var_tnorm(mu_ij, sqrt(sigma_ij), a = r_lower[i,j], b = r_upper[i,j])
-        if (is.finite(mu_ij_new)) Z[i,j] = mu_ij_new # mean expectation on ordinal: also imputation
-        if (is.finite(var_ij_new)){
-          var_ordinal[j] = var_ij_new
-          C[j,j] = C[j,j] + var_ij_new # variance expectation on ordinal
-        }
-      }
+    Z[i,] = out$mean
+    if (any(is.na(Z[i,obs_indices]))) stop('invalid Zobs')
+    if (is.null(out$cov)){
+      if (is.null(out$var)) stop('wrong return from trunc ordinal update')
+      cov_ordinal = diag(out$var)
+    }else{
+      cov_ordinal = out$cov
     }
+    C = C + cov_ordinal
 
+
+    # Record pseudo-loglikelihood
+    z_obs = Z[i,obs_indices,drop=FALSE]
+    mu_obs = mu[obs_indices]
+    negloglik = negloglik + c(determinant(sigma_oo)$modulus) + (z_obs-mu_obs) %*% (sigma_oo_inv %*% t(z_obs-mu_obs))
+    negloglik = negloglik + p*log(2*pi)
+
+    Zimp[i,obs_indices] = z_obs
     # MISSING DIMENSION
-    if (length(index_m) > 0) {
-      z_obs = matrix(Z[i,index_o], ncol=1)
+    if (any(missing_indices)) {
+      # mean expectation: also imputation
+      Zimp[i,missing_indices] = mu[missing_indices] + J_mo %*% t(z_obs - mu_obs)
+      if (any(is.na(Zimp[i,]))) stop('invalid imputation')
 
-      # Record pseudo-loglikelihood
-      negloglik = negloglik + log(abs(det(sigma11))) + t(z_obs-mu[index_o]) %*% (sigma11_inv %*% (z_obs-mu[index_o]))
-      # mean expecatation: also imputation
-      Zimp[i,index_m] = mu[index_m] + J21 %*% (z_obs - mu[index_o])
-
-      # variance expecatation
-      if (length(index_d) >= 1 & length(index_o) > 1 & sum(var_ordinal)>0){
-        diag_var_ordinal = diag(length(index_d))
-        diag(diag_var_ordinal) = var_ordinal[index_d]
-        J21varAdj = matrix(J21[,d_in_o], ncol = length(index_d)) %*% diag_var_ordinal
-        #
-        C[index_m,index_m] = C[index_m,index_m] + (sigma22 - J21 %*% sigma12) +
-          J21varAdj %*% t(matrix(J21[,d_in_o], ncol = length(index_d)))
-        #
-        C[index_m,index_d] = C[index_m,index_d] + J21varAdj
-        #
-        C[index_d,index_m] = C[index_d,index_m] + t(J21varAdj)
-      } else{
-        C[index_m,index_m] = C[index_m,index_m] + (sigma22 - J21 %*% sigma12)
+      # variance expectation
+      C[missing_indices, missing_indices] = C[missing_indices, missing_indices] + sigma_mm - J_mo %*% sigma_om
+      if (sum(diag(cov_ordinal))>0){
+        #n_obs_ord = sum(ord_obs_indices)
+        #cov_missing_obs_ord = J_mo[,ord_in_obs, drop=FALSE] %*% diag(diag(cov_ordinal)[ord_obs_indices], n_obs_ord, n_obs_ord)
+        cov_missing_obs_ord = J_mo[,ord_in_obs, drop=FALSE] %*% cov_ordinal[ord_obs_indices, ord_obs_indices, drop=FALSE]
+        C[missing_indices,ord_obs_indices] = C[missing_indices,ord_obs_indices] + cov_missing_obs_ord
+        C[ord_obs_indices,missing_indices] = C[ord_obs_indices,missing_indices] + t(cov_missing_obs_ord)
+        C[missing_indices,missing_indices] = C[missing_indices,missing_indices] + cov_missing_obs_ord %*% t(J_mo[,ord_in_obs,drop=FALSE])
       }
     }
   }
@@ -94,7 +134,9 @@ em_mixedgc_iter = function(Z, r_lower, r_upper, mu = rep(0, dim(Z)[2]), sigma){
   C = C/n
   #mu = apply(Zimp, 2, mean)
   sigma = cov(Zimp) + C
-  return(list(sigma=sigma, loglik=-negloglik, Zimp=Zimp, Zobs=Z))
+  if (any(is.na(sigma))) stop('invalid sigma')
+  loglik = -negloglik/(2*n)
+  return(list(sigma=sigma, loglik=loglik, Zimp=Zimp, Zobs=Z))
 }
 
 
@@ -141,13 +183,13 @@ em_mixedgc_ppca_iter = function(Z, r_lower, r_upper, W, sigma){
   # E-step iterate over n
   for (i in 1:n){
     # indexing
-    index_o = which(!is.na(Z[i,]))
-    d_in_o = which(index_o <= k)
-    index_d = index_o[d_in_o]
+    obs_indices = which(!is.na(Z[i,]))
+    d_in_o = which(obs_indices <= k)
+    index_d = obs_indices[d_in_o]
 
     #
-    zi_obs = matrix(Z[i,index_o], ncol = 1)
-    Ui_obs = matrix(U[index_o,],ncol = rank)
+    zi_obs = matrix(Z[i,obs_indices], ncol = 1)
+    Ui_obs = matrix(U[obs_indices,],ncol = rank)
     UU_obs = t(Ui_obs) %*% Ui_obs
 
     # used in both ordinal and factor block
@@ -159,12 +201,12 @@ em_mixedgc_ppca_iter = function(Z, r_lower, r_upper, W, sigma){
 
     # Only implement when there is at least one observed ordinal dimension(to be imputed)
     # and another observed dimension (ordinal or continuous) used as information to impute
-    if (length(index_o)>1 & length(index_d) >=1){
+    if (length(obs_indices)>1 & length(index_d) >=1){
       mu = (zi_obs - Ui_obs %*% (AU %*% zi_obs))/sigma # length is observed length < p
 
       for (j in index_d){
-        j_in_o = which(index_o == j)
-        ind_j = setdiff(index_o, j)
+        j_in_o = which(obs_indices == j)
+        ind_j = setdiff(obs_indices, j)
 
         sigma_ij = sigma/(1-quad(Ai, U[j,]))
         mu_ij = Z[i,j] - mu[j_in_o] * sigma_ij
@@ -182,12 +224,12 @@ em_mixedgc_ppca_iter = function(Z, r_lower, r_upper, W, sigma){
     }
 
     # update observed ordinal entries
-    zi_obs = matrix(Z[i,index_o], ncol = 1)
+    zi_obs = matrix(Z[i,obs_indices], ncol = 1)
     si = matrix(AU %*% zi_obs, ncol = 1)
     S[i,] = si
     tSC[i,,] = si %*% t(si)
-    #SC[i,,] =  AU %*% diag(C[i,index_o], nrow = length(index_o))  %*% t(AU)
-    SC[i,,] = AU %*% (C[i,index_o] * t(AU))
+    #SC[i,,] =  AU %*% diag(C[i,obs_indices], nrow = length(obs_indices))  %*% t(AU)
+    SC[i,,] = AU %*% (C[i,obs_indices] * t(AU))
 
     # pseudo-likelihood
     #negloglik = negloglik + log(sigma) * p + log(det(diag(rank) + diag(d) %*% UU_obs %*% diag(d)/sigma))
@@ -216,10 +258,10 @@ em_mixedgc_ppca_iter = function(Z, r_lower, r_upper, W, sigma){
   rm(tSC, SC, A)
   # M-step in sigma^2
   for (i in 1:n){
-    index_o = which(!is.na(Z[i,]))
-    Wi_obs = matrix(Wnew[index_o,], ncol = rank)
-    zi_obs = matrix(Z[i,index_o], ncol = 1)
-    wsi = matrix(Wnew[index_o,], ncol = rank) %*% matrix(S[i,], ncol=1) # O_i * k
+    obs_indices = which(!is.na(Z[i,]))
+    Wi_obs = matrix(Wnew[obs_indices,], ncol = rank)
+    zi_obs = matrix(Z[i,obs_indices], ncol = 1)
+    wsi = matrix(Wnew[obs_indices,], ncol = rank) %*% matrix(S[i,], ncol=1) # O_i * k
     s = s + sum((zi_obs - wsi)^2)
   }
   for (j in 1:p){

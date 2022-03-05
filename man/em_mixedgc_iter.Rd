@@ -4,7 +4,16 @@
 \alias{em_mixedgc_iter}
 \title{Each iteration of EM algorithm fit}
 \usage{
-em_mixedgc_iter(Z, r_lower, r_upper, mu = rep(0, dim(Z)[2]), sigma)
+em_mixedgc_iter(
+  Z,
+  r_lower,
+  r_upper,
+  mu = rep(0, ncol(Z)),
+  sigma,
+  n_update = 1,
+  trunc_method = "Iterative",
+  n_sample = 5000
+)
 }
 \arguments{
 \item{Z}{Incomplete Z matrix}
@@ -16,6 +25,12 @@ em_mixedgc_iter(Z, r_lower, r_upper, mu = rep(0, dim(Z)[2]), sigma)
 \item{mu}{Mean vector. Default setting forces it to be \code{0}.}
 
 \item{sigma}{Covariance matrix.}
+
+\item{n_update}{The number of updates to conduct when `method='Iterative'`}
+
+\item{trunc_method}{Method for evaluating truncated normal moments}
+
+\item{n_sample}{Number of samples to use for sampling methods for evaluating truncated normal moments}
 }
 \value{
 A list containing fitted copula correlation matrix, the likelihood(objective function), Z matrix with updated ordinal entries and a complete imputed Z matrix.
@@ -30,7 +45,7 @@ A list containing fitted copula correlation matrix, the likelihood(objective fun
 fit the Gaussian copula model with incomplete mixed type data
 }
 \references{
-Zhao, Y., & Udell, M. (2019). Missing Value Imputation for Mixed Data Through Gaussian Copula. arXiv preprint arXiv:1910.12845.
+Zhao, Y., & Udell, M. (2020). Missing Value Imputation for Mixed Data Through Gaussian Copula. KDD 2020.
 }
 \author{
 Yuxuan Zhao, \email{yz2295@cornell.edu} and Madeleine Udell, \email{udell@cornell.edu}
