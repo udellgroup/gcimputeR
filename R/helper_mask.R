@@ -16,7 +16,7 @@ mask_MCAR = function(X, mask_fraction, max_try=50,  seed=NULL, allow_empty_row=F
   obs_coors = which(!is.na(X))
   num  = length(obs_coors)
   if (!is.null(seed)) set.seed(seed)
-
+  i=0
   while(TRUE){
     mask_indices = sample(1:num, num*mask_fraction)
     mask_coors = obs_coors[mask_indices]
