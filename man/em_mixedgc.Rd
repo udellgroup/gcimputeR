@@ -14,6 +14,7 @@ em_mixedgc(
   runiter = 0,
   trunc_method = "Iterative",
   n_sample = 5000,
+  n_update = 1,
   scale_to_corr = TRUE
 )
 }
@@ -34,7 +35,9 @@ em_mixedgc(
 
 \item{trunc_method}{Method for evaluating truncated normal moments}
 
-\item{n_sample}{Number of samples to use for sampling methods for evaluating truncated normal moments}
+\item{n_sample}{Number of samples to use for sampling methods for evaluating truncated normal moment. Only used when `trunc_method='Sampling_TN'`}
+
+\item{n_update}{Number of iterative updates to conduct. Only used when `trunc_method='Iterative'`}
 
 \item{scale_to_corr}{Whether to scale a covariance into a correlation matrix in each EM iteration. For development purpose. Use with caution.}
 }
