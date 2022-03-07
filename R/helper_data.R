@@ -69,10 +69,11 @@ generate_sigma <- function(p){
 #' @param cutoff_by When ordinalizing, select cut points by absolute values if `dist` and by quantiles if `quantile`
 #' @param qmin Cutoff points are slected in the range of `qmin` and `qmax` quantiles of the data `x`
 #' @param qmax See `qmin`.
+#' @param num_ord Number of ordinal levels to use
 #' @return an ordinal vector.
 #' @export
 generate_mixed_from_gc <- function(sigma=NULL, n=2000, seed=NULL, var_types = NULL,
-                                   cont_transform=NULL, cutoff_by='quantile', qmin=0.05, qmax=0.95){
+                                   cont_transform=NULL, cutoff_by='quantile', qmin=0.05, qmax=0.95, num_ord=5){
   if (is.null(cont_transform)) cont_transform <- function(x) qexp(pnorm(x), rate = 1/3)
   if (is.null(var_types)) var_types = list('cont'=1:5, 'ord'=6:10, 'bin'=11:15)
   cont_index = var_types$cont
@@ -97,7 +98,7 @@ generate_mixed_from_gc <- function(sigma=NULL, n=2000, seed=NULL, var_types = NU
   X = do.call(rbind, X)
 
   X[,cont_index] = cont_transform(X[,cont_index])
-  for (i in ord_index) X[,i] = continuous2ordinal(X[,i], k=5, by = cutoff_by, qmin = qmin, qmax = qmax)
+  for (i in ord_index) X[,i] = continuous2ordinal(X[,i], k=num_ord, by = cutoff_by, qmin = qmin, qmax = qmax)
   for (i in bin_index) X[,i] = continuous2ordinal(X[,i], k=2, by = cutoff_by, qmin = qmin, qmax = qmax)
 
   X

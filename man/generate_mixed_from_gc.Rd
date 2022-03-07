@@ -12,7 +12,8 @@ generate_mixed_from_gc(
   cont_transform = NULL,
   cutoff_by = "quantile",
   qmin = 0.05,
-  qmax = 0.95
+  qmax = 0.95,
+  num_ord = 5
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ generate_mixed_from_gc(
 \item{qmin}{Cutoff points are slected in the range of `qmin` and `qmax` quantiles of the data `x`}
 
 \item{qmax}{See `qmin`.}
+
+\item{num_ord}{Number of ordinal levels to use}
 }
 \value{
 an ordinal vector.

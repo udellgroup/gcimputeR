@@ -11,7 +11,8 @@ impute_mixedgc(
   nlevels = 20,
   runiter = 0,
   trunc_method = "Iterative",
-  n_sample = 5000
+  n_sample = 5000,
+  ...
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ impute_mixedgc(
 \item{trunc_method}{Method for evaluating truncated normal moments}
 
 \item{n_sample}{Number of samples to use for sampling methods for evaluating truncated normal moments}
+
+\item{...}{Additional arguments for development use}
 }
 \value{
 A list containing:

@@ -10,6 +10,7 @@
 #' @param runiter When set as a positive integer, the algorithm will run \code{runiter} iterations exactly.
 #' @param trunc_method Method for evaluating truncated normal moments
 #' @param n_sample Number of samples to use for sampling methods for evaluating truncated normal moments
+#' @param scale_to_corr Whether to scale a covariance into a correlation matrix in each EM iteration. For development purpose. Use with caution.
 #' @return A list containing fitted copula correlation matrix, the likelihood(objective function), Z matrix with updated ordinal entries and a complete imputed Z matrix.
 #' \describe{
 #'   \item{\code{R}}{Fitted copula correlation matrix}
@@ -21,7 +22,9 @@
 #' @references Zhao, Y., & Udell, M. (2019). Missing Value Imputation for Mixed Data Through Gaussian Copula. arXiv preprint arXiv:1910.12845.
 #' @export
 em_mixedgc = function(Z_continuous, r_lower, r_upper,
-                      start =NULL, maxit=100, eps=1e-3, runiter=0, trunc_method='Iterative', n_sample=5000){
+                      start=NULL, maxit=100, eps=1e-3, runiter=0,
+                      trunc_method='Iterative', n_sample=5000,
+                      scale_to_corr=TRUE){
   if (is.null(Z_continuous)){
     p = dim(r_upper)[2]
     k = p
@@ -59,8 +62,12 @@ em_mixedgc = function(Z_continuous, r_lower, r_upper,
     l = l+1
     est_iter = em_mixedgc_iter(Z, r_lower, r_upper, rep(0,p), R, trunc_method = trunc_method, n_sample=n_sample)
     Z = est_iter$Zobs
-    R1 = cov2cor(est_iter$sigma)
+    R1 = est_iter$sigma
+    if (scale_to_corr) R1 = cov2cor(R1)
     loglik = c(loglik, est_iter$loglik)
+    # update
+    R = R1
+    # determine convergence
     if (runiter==0){
       err = norm(R1-R, type = 'F')/norm(R, type = 'F')
       if (err<eps) break
@@ -69,10 +76,10 @@ em_mixedgc = function(Z_continuous, r_lower, r_upper,
         break
       }
     }else{
-      if (l>runiter) break
+      if (l>=runiter) break
     }
 
-    R = R1
+
   }
 
   return(list(R=R, loglik=loglik, Zobs = Z, Zimp = est_iter$Zimp))

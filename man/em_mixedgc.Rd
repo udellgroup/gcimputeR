@@ -13,7 +13,8 @@ em_mixedgc(
   eps = 0.001,
   runiter = 0,
   trunc_method = "Iterative",
-  n_sample = 5000
+  n_sample = 5000,
+  scale_to_corr = TRUE
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ em_mixedgc(
 \item{trunc_method}{Method for evaluating truncated normal moments}
 
 \item{n_sample}{Number of samples to use for sampling methods for evaluating truncated normal moments}
+
+\item{scale_to_corr}{Whether to scale a covariance into a correlation matrix in each EM iteration. For development purpose. Use with caution.}
 }
 \value{
 A list containing fitted copula correlation matrix, the likelihood(objective function), Z matrix with updated ordinal entries and a complete imputed Z matrix.

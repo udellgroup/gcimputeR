@@ -26,7 +26,7 @@ em_mixedgc_iter = function(Z, r_lower, r_upper, mu = rep(0, ncol(Z)), sigma, n_u
   p = dim(Z)[2]
   if (is.null(r_lower)) k = 0 else k = dim(r_lower)[2]
   negloglik = 0
-  Zimp = matrix(NA, n, p)
+  Zimp = Z
   C = matrix(0, nrow = p, ncol = p)
 
   for (i in 1:n){
@@ -133,6 +133,7 @@ em_mixedgc_iter = function(Z, r_lower, r_upper, mu = rep(0, ncol(Z)), sigma, n_u
   # variance expecation on discrete*discrete
   C = C/n
   #mu = apply(Zimp, 2, mean)
+  if (any(is.na(Zimp))) stop('error in imputing Z')
   sigma = cov(Zimp) + C
   if (any(is.na(sigma))) stop('invalid sigma')
   loglik = -negloglik/(2*n)
