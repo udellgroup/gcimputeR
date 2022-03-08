@@ -12,6 +12,7 @@ impute_mixedgc(
   runiter = 0,
   trunc_method = "Iterative",
   n_sample = 5000,
+  verbose = FALSE,
   ...
 )
 }
@@ -30,13 +31,15 @@ impute_mixedgc(
 
 \item{n_sample}{Number of samples to use for sampling methods for evaluating truncated normal moments}
 
+\item{verbose}{Whether to print progress information}
+
 \item{...}{Additional arguments for development use}
 }
 \value{
 A list containing:
 \describe{
   \item{\code{Ximp}}{Imputed data matrix}
-  \item{\code{R}}{Fitted copula correlation matrix}
+  \item{\code{corr}}{Fitted copula correlation matrix}
   \item{\code{loglik}}{The log-likelihood achieved during iteration. This value approximates the true objective function we want to maximize, which is hard to evaluate. Monotonically increasing \code{loglik} sequence indicates good fit}
 }
 }

@@ -14,12 +14,13 @@ NULL
 #' @param trunc_method Method for evaluating truncated normal moments
 #' @param n_sample Number of samples to use for sampling methods for evaluating truncated normal moments
 #' @param runiter When set as a positive integer, the algorithm will run \code{runiter} iterations exactly.
+#' @param verbose Whether to print progress information
 #' @param ... Additional arguments for development use
 #' @details Impute the missing entries of a continuous and ordinal mixed data by fitting a Gaussian copula model to the data. The algorithm first scales original observation \code{X} to copula observation \code{Z} whose marginals are all standard normal. For continuous columns of \code{Z}, each observed entry records a value. While for ordinal columns of \code{Z}, each observed entry records an interval. The second step is to estimate the Gaussian copula correlation matrix using observed information of \code{Z}. With estimated correlation matrix, the third step imputes missing entries of \code{Z}. The last step imputes the missing entries of \code{X} based on the imputed entries of \code{Z}.
 #' @return A list containing:
 #' \describe{
 #'   \item{\code{Ximp}}{Imputed data matrix}
-#'   \item{\code{R}}{Fitted copula correlation matrix}
+#'   \item{\code{corr}}{Fitted copula correlation matrix}
 #'   \item{\code{loglik}}{The log-likelihood achieved during iteration. This value approximates the true objective function we want to maximize, which is hard to evaluate. Monotonically increasing \code{loglik} sequence indicates good fit}
 #' }
 #' @author Yuxuan Zhao, \email{yz2295@cornell.edu} and Madeleine Udell, \email{udell@cornell.edu}
@@ -48,7 +49,7 @@ NULL
 #'
 
 impute_mixedgc = function(X, maxit=50, eps=0.01, nlevels = 20, runiter = 0,
-                          trunc_method = 'Iterative', n_sample=5000,
+                          trunc_method = 'Iterative', n_sample=5000, verbose=FALSE,
                           ...
                           ){
   n = dim(X)[1]
@@ -65,7 +66,7 @@ impute_mixedgc = function(X, maxit=50, eps=0.01, nlevels = 20, runiter = 0,
   k = length(d_index)
   c_index = setdiff(1:p, d_index)
   if (k > 0) {
-    r = range_transform(matrix(X[, d_index], nrow = n), type = "ordinal")
+    r = range_transform(X[, d_index, drop=FALSE], type = "ordinal")
     r_lower = r$r_lower
     r_upper = r$r_upper
     rm(r)
@@ -82,8 +83,8 @@ impute_mixedgc = function(X, maxit=50, eps=0.01, nlevels = 20, runiter = 0,
   fit_em = em_mixedgc(Z_continuous = Z_continuous,
                       r_lower = r_lower,r_upper = r_upper,
                       maxit = maxit, eps = eps, runiter=runiter,
-                      trunc_method = trunc_method, n_sample=n_sample, ...)
-  R = fit_em$R
+                      trunc_method = trunc_method, n_sample=n_sample, verbose=verbose, ...)
+  R = fit_em$corr
   # Impute X using Imputed Z
   Xnew.p = Ximp_transform(Z = fit_em$Zimp, X = X[, c(d_index,c_index)], d_index = d_index)
   # Back to original permuation
@@ -97,7 +98,7 @@ impute_mixedgc = function(X, maxit=50, eps=0.01, nlevels = 20, runiter = 0,
     R1[c_index, c_index] = R[(k + 1):p, (k + 1):p]
     Xnew[, c_index] = Xnew.p[, (k + 1):p]
   }
-  return(list(Ximp = Xnew, R = R1, loglik = fit_em$loglik))
+  return(list(Ximp = Xnew, corr = R1, loglik = fit_em$loglik))
 }
 
 #' Impute mixed type data with low rank Gaussian copula

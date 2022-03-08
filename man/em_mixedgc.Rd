@@ -15,6 +15,7 @@ em_mixedgc(
   trunc_method = "Iterative",
   n_sample = 5000,
   n_update = 1,
+  verbose = FALSE,
   scale_to_corr = TRUE
 )
 }
@@ -39,23 +40,19 @@ em_mixedgc(
 
 \item{n_update}{Number of iterative updates to conduct. Only used when `trunc_method='Iterative'`}
 
+\item{verbose}{Whether to print progress information}
+
 \item{scale_to_corr}{Whether to scale a covariance into a correlation matrix in each EM iteration. For development purpose. Use with caution.}
 }
 \value{
 A list containing fitted copula correlation matrix, the likelihood(objective function), Z matrix with updated ordinal entries and a complete imputed Z matrix.
 \describe{
-  \item{\code{R}}{Fitted copula correlation matrix}
+  \item{\code{corr}}{Fitted copula correlation matrix}
   \item{\code{loglik}}{The log-likelihood achieved during iteration.}
-  \item{\code{Zobs}}{Incomplete \code{Z} with approximated observed ordinal entries}
+  \item{\code{Z}}{Incomplete \code{Z} with approximated observed ordinal entries}
   \item{\code{Zimp}}{Complete \code{Z} with observed entries the same as \code{Zobs} and missing entries imputed}
 }
 }
 \description{
 fit the Gaussian copula model from incomplete mixed data
-}
-\references{
-Zhao, Y., & Udell, M. (2019). Missing Value Imputation for Mixed Data Through Gaussian Copula. arXiv preprint arXiv:1910.12845.
-}
-\author{
-Yuxuan Zhao, \email{yz2295@cornell.edu} and Madeleine Udell, \email{udell@cornell.edu}
 }

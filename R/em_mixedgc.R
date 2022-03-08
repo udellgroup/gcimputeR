@@ -12,19 +12,18 @@
 #' @param n_sample Number of samples to use for sampling methods for evaluating truncated normal moment. Only used when `trunc_method='Sampling_TN'`
 #' @param n_update Number of iterative updates to conduct. Only used when `trunc_method='Iterative'`
 #' @param scale_to_corr Whether to scale a covariance into a correlation matrix in each EM iteration. For development purpose. Use with caution.
+#' @param verbose Whether to print progress information
 #' @return A list containing fitted copula correlation matrix, the likelihood(objective function), Z matrix with updated ordinal entries and a complete imputed Z matrix.
 #' \describe{
-#'   \item{\code{R}}{Fitted copula correlation matrix}
+#'   \item{\code{corr}}{Fitted copula correlation matrix}
 #'   \item{\code{loglik}}{The log-likelihood achieved during iteration.}
-#'   \item{\code{Zobs}}{Incomplete \code{Z} with approximated observed ordinal entries}
+#'   \item{\code{Z}}{Incomplete \code{Z} with approximated observed ordinal entries}
 #'   \item{\code{Zimp}}{Complete \code{Z} with observed entries the same as \code{Zobs} and missing entries imputed}
 #' }
-#' @author Yuxuan Zhao, \email{yz2295@cornell.edu} and Madeleine Udell, \email{udell@cornell.edu}
-#' @references Zhao, Y., & Udell, M. (2019). Missing Value Imputation for Mixed Data Through Gaussian Copula. arXiv preprint arXiv:1910.12845.
-#' @export
 em_mixedgc = function(Z_continuous, r_lower, r_upper,
                       start=NULL, maxit=100, eps=1e-3, runiter=0,
                       trunc_method='Iterative', n_sample=5000, n_update=1,
+                      verbose=FALSE,
                       scale_to_corr=TRUE){
   if (is.null(Z_continuous)){
     p = dim(r_upper)[2]
@@ -61,16 +60,20 @@ em_mixedgc = function(Z_continuous, r_lower, r_upper,
   loglik = NULL
   repeat{
     l = l+1
-    est_iter = em_mixedgc_iter(Z, r_lower, r_upper, rep(0,p), R, trunc_method = trunc_method, n_sample=n_sample)
-    Z = est_iter$Zobs
-    R1 = est_iter$sigma
+    est_iter = em_mixedgc_iter(Z, r_lower, r_upper, rep(0,p), R,
+                               trunc_method = trunc_method, n_sample=n_sample, n_update=n_update)
+    Z = est_iter$Z
+    R1 = est_iter$corr
     if (scale_to_corr) R1 = cov2cor(R1)
+    err = norm(R1-R, type = 'F')/norm(R, type = 'F')
     loglik = c(loglik, est_iter$loglik)
     # update
     R = R1
     # determine convergence
     if (runiter==0){
-      err = norm(R1-R, type = 'F')/norm(R, type = 'F')
+      if (verbose){
+        print(paste0('Iteration ', l, ': ', 'copula parameter change ', round(err, 4), ', likelihood ', round(est_iter$loglik, 4)))
+      }
       if (err<eps) break
       if (l > maxit){
         warning('Max iter reached in EM')
@@ -82,8 +85,7 @@ em_mixedgc = function(Z_continuous, r_lower, r_upper,
 
 
   }
-
-  return(list(R=R, loglik=loglik, Zobs = Z, Zimp = est_iter$Zimp))
+  return(list(corr=R, loglik=loglik, Z = Z, Zimp = est_iter$Zimp))
 }
 
 #' EM algorithm to fit low rank Gaussian copula

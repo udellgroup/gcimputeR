@@ -63,7 +63,7 @@ You can also extract the fitted copula correlation matrix to describe the correl
 
 ```{r evaluate sigma}
 # relative Frobeinus error of imputed correlation matrix
-norm(fit$R - Sigma, type = 'F')/norm(fit$R, type = 'F') 
+norm(fit$corr - Sigma, type = 'F')/norm(Sigma, type = 'F') 
 ```
 
 

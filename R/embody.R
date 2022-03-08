@@ -35,8 +35,10 @@ update_z_row_ord <- function(z, lower, upper,
     ord_in_obs_iter = which(ord_in_obs)
     obs_in_ord_iter = which(obs_in_ord)
 
+
     for (i in 1:n_update){
       sigma_oo_inv_z = f_sigma_oo_inv_z(z[obs_indices])
+      z_new = z
       for (index in seq_along(ord_obs_iter)){
         # j is the location in the p-dim coordinate
         # j_in_obs is the location of j in the obs-dim coordinate
@@ -49,12 +51,14 @@ update_z_row_ord <- function(z, lower, upper,
         cond_std_j = sqrt(cond_var_j)
         cond_mean_j = z[j] - cond_var_j*sigma_oo_inv_z[j_in_obs]
 
-        new_mean_j = mean_tnorm(cond_mean_j, cond_std_j, lower[j_in_ord], upper[j_in_ord])
-        new_var_j = var_tnorm(cond_mean_j, cond_std_j, lower[j_in_ord], upper[j_in_ord])
+        out_trunc = moments_truncnorm(cond_mean_j, cond_std_j, lower[j_in_ord], upper[j_in_ord])
+        new_mean_j = out_trunc[['mean']]
+        new_var_j = out_trunc[['var']]
 
-        if (is.finite(new_mean_j)) z[j] = new_mean_j
+        if (is.finite(new_mean_j)) z_new[j] = new_mean_j
         if (is.finite(new_var_j)) var_ordinal[j] = new_var_j
       }
+      z = z_new
     }
 
   }
