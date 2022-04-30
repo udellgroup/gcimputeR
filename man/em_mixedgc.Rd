@@ -5,42 +5,48 @@
 \title{EM algorithm to fit Gaussian copula}
 \usage{
 em_mixedgc(
-  Z_continuous,
-  r_lower,
-  r_upper,
+  Z,
+  Lower,
+  Upper,
+  d_index,
+  cat_input = NULL,
   start = NULL,
-  maxit = 100,
-  eps = 0.001,
-  runiter = 0,
   trunc_method = "Iterative",
   n_sample = 5000,
   n_update = 1,
+  maxit = 50,
+  eps = 0.01,
   verbose = FALSE,
+  runiter = 0,
   scale_to_corr = TRUE
 )
 }
 \arguments{
-\item{Z_continuous}{Continuous columns}
+\item{Z}{Transformed latent matrix}
 
-\item{r_lower}{Lower boundary of truncated intervals for ordinal columns}
+\item{Lower}{Lower boundary of truncated intervals}
 
-\item{r_upper}{Upper boundary of truncated intervals for ordinal columns}
+\item{Upper}{Upper boundary of truncated intervals}
 
-\item{start}{Initial value of copula correlation matrix. Default is \code{NULL}.}
+\item{d_index}{Boolean vector with \code{TRUE} at ordinal dimensions}
 
-\item{maxit}{maximum number of iterations}
+\item{cat_input}{Input for categorical dimensions}
+
+\item{start}{Initial value of copula correlation.}
+
+\item{trunc_method}{Method for evaluating truncated normal moments: \code{'Iterative'} or \code{'Sampling'}.}
+
+\item{n_sample}{Number of MC samples, only used when \code{trunc_method} is \code{'Sampling'}}
+
+\item{n_update}{The number of updates, only used when \code{trunc_method} is \code{'Iterative'}}
+
+\item{maxit}{Maximum number of iterations}
 
 \item{eps}{Convergence threshold}
 
-\item{runiter}{When set as a positive integer, the algorithm will run \code{runiter} iterations exactly.}
-
-\item{trunc_method}{Method for evaluating truncated normal moments}
-
-\item{n_sample}{Number of samples to use for sampling methods for evaluating truncated normal moment. Only used when `trunc_method='Sampling_TN'`}
-
-\item{n_update}{Number of iterative updates to conduct. Only used when `trunc_method='Iterative'`}
-
 \item{verbose}{Whether to print progress information}
+
+\item{runiter}{When set as a positive integer, the algorithm will run the specified number of iterations exactly.}
 
 \item{scale_to_corr}{Whether to scale a covariance into a correlation matrix in each EM iteration. For development purpose. Use with caution.}
 }
@@ -49,7 +55,7 @@ A list containing fitted copula correlation matrix, the likelihood(objective fun
 \describe{
   \item{\code{corr}}{Fitted copula correlation matrix}
   \item{\code{loglik}}{The log-likelihood achieved during iteration.}
-  \item{\code{Z}}{Incomplete \code{Z} with approximated observed ordinal entries}
+  \item{\code{Z}}{Incomplete \code{Z} with approximated observed ordinal mean}
   \item{\code{Zimp}}{Complete \code{Z} with observed entries the same as \code{Zobs} and missing entries imputed}
 }
 }

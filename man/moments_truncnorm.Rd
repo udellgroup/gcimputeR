@@ -4,12 +4,12 @@
 \alias{moments_truncnorm}
 \title{Truncated normal mean and variance}
 \usage{
-moments_truncnorm(mu, sigma, a, b, tol = 1e-06, mean_only = FALSE)
+moments_truncnorm(mu, std, a, b, tol = 1e-06, mean_only = FALSE)
 }
 \arguments{
 \item{mu}{Mean of the normal distribution}
 
-\item{sigma}{Standard deviation of the normal distribution}
+\item{std}{Standard deviation of the normal distribution}
 
 \item{a}{Left endpoint of the truncated interval}
 

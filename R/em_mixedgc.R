@@ -1,79 +1,69 @@
   #' EM algorithm to fit Gaussian copula
 #'
 #' @description  fit the Gaussian copula model from incomplete mixed data
-#' @param Z_continuous Continuous columns
-#' @param r_lower Lower boundary of truncated intervals for ordinal columns
-#' @param r_upper Upper boundary of truncated intervals for ordinal columns
-#' @param start Initial value of copula correlation matrix. Default is \code{NULL}.
-#' @param maxit maximum number of iterations
-#' @param eps Convergence threshold
-#' @param runiter When set as a positive integer, the algorithm will run \code{runiter} iterations exactly.
-#' @param trunc_method Method for evaluating truncated normal moments
-#' @param n_sample Number of samples to use for sampling methods for evaluating truncated normal moment. Only used when `trunc_method='Sampling_TN'`
-#' @param n_update Number of iterative updates to conduct. Only used when `trunc_method='Iterative'`
+#' @param Z Transformed latent matrix
+#' @inheritParams initZ_ordinal
+#' @inheritParams observed_to_latent
+#' @inheritParams impute_mixedgc
+#' @param cat_input Input for categorical dimensions
+#' @param start Initial value of copula correlation.
 #' @param scale_to_corr Whether to scale a covariance into a correlation matrix in each EM iteration. For development purpose. Use with caution.
-#' @param verbose Whether to print progress information
 #' @return A list containing fitted copula correlation matrix, the likelihood(objective function), Z matrix with updated ordinal entries and a complete imputed Z matrix.
 #' \describe{
 #'   \item{\code{corr}}{Fitted copula correlation matrix}
 #'   \item{\code{loglik}}{The log-likelihood achieved during iteration.}
-#'   \item{\code{Z}}{Incomplete \code{Z} with approximated observed ordinal entries}
+#'   \item{\code{Z}}{Incomplete \code{Z} with approximated observed ordinal mean}
 #'   \item{\code{Zimp}}{Complete \code{Z} with observed entries the same as \code{Zobs} and missing entries imputed}
 #' }
-em_mixedgc = function(Z_continuous, r_lower, r_upper,
-                      start=NULL, maxit=100, eps=1e-3, runiter=0,
+em_mixedgc = function(Z, Lower, Upper, d_index,
+                      cat_input = NULL,
+                      start=NULL,
                       trunc_method='Iterative', n_sample=5000, n_update=1,
-                      verbose=FALSE,
+                      maxit=50, eps=0.01, verbose=FALSE, runiter=0,
                       scale_to_corr=TRUE){
-  if (is.null(Z_continuous)){
-    p = dim(r_upper)[2]
-    k = p
-  }
-  else{
-    if (is.null(r_upper)){
-      p = dim(Z_continuous)[2]
-      k=0
-    }
-    else{
-      p = dim(r_upper)[2] +  dim(Z_continuous)[2]
-      k = dim(r_upper)[2]
-    }
-  }
-
-  # Initialize observed ordinal values
-  if (k > 0){
-    Z_ordinal = initZ_ordinal(r_upper = r_upper, r_lower = r_lower)
-  } else Z_ordinal = NULL
-
   # Initialize with mean imputation for Z_continuous
+  Z_lower = Lower
+  Z_upper = Upper
+  p = length(d_index)
+  c_index = !d_index
   if(is.null(start)){
-    Z_meanimp = cbind(Z_ordinal, Z_continuous)
+    Z_meanimp = Z
     Z_meanimp[is.na(Z_meanimp)] = 0
     R = cor(Z_meanimp)
     rm(Z_meanimp)
   }else{
     R = start$R
   }
+  if (!is.null(cat_input)) R = project_to_nominal_corr(R, cat_input$cat_index_list)
 
-  Z = cbind(Z_ordinal, Z_continuous)
+  Zimp = Z
   l=0
   loglik = NULL
+
   repeat{
     l = l+1
-    est_iter = em_mixedgc_iter(Z, r_lower, r_upper, rep(0,p), R,
-                               trunc_method = trunc_method, n_sample=n_sample, n_update=n_update)
+    est_iter = latent_operation('em',
+                                Z, Z_lower, Z_upper, d_index,
+                                cat_input = cat_input,
+                                corr = R,
+                                trunc_method = trunc_method, n_sample=n_sample, n_update=n_update)
     Z = est_iter$Z
+    Zimp = est_iter$Zimp
     R1 = est_iter$corr
-    if (scale_to_corr) R1 = cov2cor(R1)
+    if (scale_to_corr){
+      R1 = cov2cor(R1)
+      if (!is.null(cat_input)) R1 = project_to_nominal_corr(R1, cat_input$cat_index_list)
+      #if (!is.null(cat_input)) R1 = project_to_nominal_corr_simple(R1, cat_input$cat_index_list)
+    }
     err = norm(R1-R, type = 'F')/norm(R, type = 'F')
     loglik = c(loglik, est_iter$loglik)
     # update
     R = R1
+    if (verbose){
+      print(paste0('Iteration ', l, ': ', 'copula parameter change ', round(err, 4), ', likelihood ', round(est_iter$loglik, 4)))
+    }
     # determine convergence
     if (runiter==0){
-      if (verbose){
-        print(paste0('Iteration ', l, ': ', 'copula parameter change ', round(err, 4), ', likelihood ', round(est_iter$loglik, 4)))
-      }
       if (err<eps) break
       if (l > maxit){
         warning('Max iter reached in EM')
@@ -83,10 +73,10 @@ em_mixedgc = function(Z_continuous, r_lower, r_upper,
       if (l>=runiter) break
     }
 
-
   }
   return(list(corr=R, loglik=loglik, Z = Z, Zimp = est_iter$Zimp))
 }
+
 
 #' EM algorithm to fit low rank Gaussian copula
 #'

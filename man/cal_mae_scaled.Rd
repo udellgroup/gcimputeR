@@ -4,7 +4,7 @@
 \alias{cal_mae_scaled}
 \title{compute the scaled mean squared error(SMAE) scaled by the MAE of column}
 \usage{
-cal_mae_scaled(xhat, xobs, xtrue, round = FALSE)
+cal_mae_scaled(xhat, xobs, xtrue, round = FALSE, reduce = TRUE)
 }
 \arguments{
 \item{xhat}{complete imputed data matrix}

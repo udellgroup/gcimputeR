@@ -2,9 +2,9 @@
 % Please edit documentation in R/transform_fun.R
 \name{Ximp_transform}
 \alias{Ximp_transform}
-\title{Transform imputed Z matrix to original scale X}
+\title{Transform imputed Z matrix to X in the observed space}
 \usage{
-Ximp_transform(Z, X, d_index)
+Ximp_transform(Z, X, d_index, c_index = NULL)
 }
 \arguments{
 \item{Z}{imputed Z matrix}

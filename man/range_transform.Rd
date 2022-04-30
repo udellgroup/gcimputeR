@@ -7,18 +7,18 @@
 range_transform(X, type)
 }
 \arguments{
-\item{X}{original observation matrix}
+\item{X}{Original observation matrix}
 
-\item{type}{Speficy data type. Either \code{continuous} or \code{ordinal}.}
+\item{type}{Data type. Either \code{"continuous"} or \code{"ordinal"}.}
 }
 \value{
 A list containing
 \describe{
-  \item{\code{r_val}}{Return when \code{type=continuous}. Corresponding value}
-  \item{\code{r_lower}}{Return when \code{type=ordinal}. Lower boundary of corresponding truncated interval}
-  \item{\code{r_upper}}{Return when \code{type=ordinal}. Upper boundary of corresponding truncated interval}
+  \item{\code{Z}}{Available when \code{type=continuous}. Corresponding value}
+  \item{\code{Lower}}{Available when \code{type=ordinal}. Lower boundary of corresponding truncated interval}
+  \item{\code{Upper}}{Available when \code{type=ordinal}. Upper boundary of corresponding truncated interval}
 }
 }
 \description{
-For each continuous column of \code{X}, compute its corresonding value of \code{Z}; For each ordinal column of \code{Z}, compute its corresponding truncated interval of \code{Z}.
+For continuous \code{X}, compute its corresonding latent value \code{Z}; For ordinal \code{X}, compute its corresponding truncated interval on latent value \code{Z}.
 }

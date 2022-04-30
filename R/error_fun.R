@@ -12,7 +12,7 @@ cal_mae = function(xhat, xobs=NULL, xtrue, round = FALSE){
   xobs = as.numeric(as.matrix(xobs))
   xtrue = as.numeric(as.matrix(xtrue))
   if(round) xhat = round(xhat)
-  if (is.null(xobs)) loc = 1:length(xhat) else loc = which(is.na(xobs) & (!is.na(xtrue)))
+  if (is.null(xobs)) loc = !is.na(xtrue) else loc = which(is.na(xobs) & (!is.na(xtrue)))
   mean(abs(xhat[loc] - xtrue[loc]))
 }
 
@@ -29,9 +29,8 @@ cal_rmse = function(xhat, xobs=NULL, xtrue, relative = TRUE){
   xhat = as.numeric(as.matrix(xhat))
   xobs = as.numeric(as.matrix(xobs))
   xtrue = as.numeric(as.matrix(xtrue))
-  loc = which(is.na(xobs))
+  if (is.null(xobs)) loc = !is.na(xtrue) else loc = which(is.na(xobs) & (!is.na(xtrue)))
   if (relative) scale = sqrt(mean((xtrue[loc])^2)) else scale = 1
-  if (is.null(xobs)) loc = 1:length(xhat) else loc = which(is.na(xobs) & (!is.na(xtrue)))
   sqrt(mean((xhat[loc] - xtrue[loc])^2)) / scale
 }
 
@@ -44,7 +43,7 @@ cal_rmse = function(xhat, xobs=NULL, xtrue, relative = TRUE){
 #' @param round whether round the values of \code{xhat} to integers
 #' @return a vector with SMAE for each column
 #' @export
-cal_mae_scaled = function(xhat, xobs, xtrue, round = FALSE){
+cal_mae_scaled = function(xhat, xobs, xtrue, round = FALSE, reduce = TRUE){
   n = dim(xtrue)[1]
   p = dim(xtrue)[2]
   xobs = as.numeric(as.matrix(xobs))
@@ -58,6 +57,22 @@ cal_mae_scaled = function(xhat, xobs, xtrue, round = FALSE){
     err.med = cal_mae(xhat = rep(med[j],n), xobs = xobs[,j], xtrue = xtrue[,j])
     err.imp[j] = cal_mae(xhat = xhat[,j], xobs = xobs[,j], xtrue = xtrue[,j], round = round)/err.med
   }
+  if (any(is.infinite(err.imp))) warning('Perfect median imputation appears')
+  if (reduce) err.imp = mean(err.imp)
   err.imp
 }
 
+#' compute mis-classification rate for categorical data
+#'
+#' @description compute mis-classification rate for categorical data
+#' @param xhat complete imputed data matrix
+#' @param xobs incomplete observed data matrix
+#' @param xtrue complete true data matrix
+#' @export
+cal_misclass = function(xhat, xobs, xtrue){
+  xhat = as.numeric(as.matrix(xhat))
+  xobs = as.numeric(as.matrix(xobs))
+  xtrue = as.numeric(as.matrix(xtrue))
+  if (is.null(xobs)) loc = !is.na(xtrue) else loc = which(is.na(xobs) & (!is.na(xtrue)))
+  mean(xhat[loc] == xtrue[loc])
+}

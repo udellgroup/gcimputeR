@@ -2,7 +2,7 @@
 % Please edit documentation in R/impute_mixedgc.R
 \name{impute_mixedgc_ppca}
 \alias{impute_mixedgc_ppca}
-\title{Impute mixed type data with low rank Gaussian copula}
+\title{Low rank Gaussian copula for incomplete mixed data}
 \usage{
 impute_mixedgc_ppca(
   X,
@@ -17,7 +17,7 @@ impute_mixedgc_ppca(
 \arguments{
 \item{X}{A matrix or data.frame with missing values. Observed entry of \code{X} should either be numerical value or numerical ordinal level. Make sure there is no empty row nor character level in \code{X}.}
 
-\item{rank}{the number of latent factors}
+\item{rank}{The rank, i.e. number of latent factors}
 
 \item{maxit}{Maximum number of iterations}
 
@@ -25,9 +25,7 @@ impute_mixedgc_ppca(
 
 \item{nlevels}{A column which has larger number of unique values than \code{nlevels} will be classfied as continuous, otherwise ordinal.}
 
-\item{verbose}{If true, output each iteration's detail}
-
-\item{early.stop}{If true, stop the algorithm when the likelihood change is small.}
+\item{verbose}{Whether to print progress information}
 }
 \value{
 A list containing:
@@ -42,13 +40,13 @@ A list containing:
 }
 }
 \description{
-Impute the missing values of a continuous and ordinal mixed dataset through low rank Gaussian copula model.
+Fit a low rank Gaussian copula model from (continuous and ordinal) mixed data and impute the missing entries using the fitted model
 }
 \details{
-Impute the missing entries of a continuous and ordinal mixed data by fitting a low rank Gaussian copula model to the data. The algorithm first scales original observation \code{X} to copula observation \code{Z} whose marginals are all standard normal. For continuous columns of \code{Z}, each observed entry records a value. While for ordinal columns of \code{Z}, each observed entry records an interval. The second step is to estimate the Gaussian copula correlation matrix using observed information of \code{Z}. With estimated correlation matrix, the third step imputes missing entries of \code{Z}. The last step imputes the missing entries of \code{X} based on the imputed entries of \code{Z}.
+Impute the missing entries of continuous and ordinal mixed data by fitting a low rank Gaussian copula (LRGC) model to the data. LRGC is a subclass of Gaussian copula: it requires the copula correlation matrix to have a low rank plus diagonal decomposition: \eqn{\Sigma = WW^\top + \sigma^2 \mathrm{I}_p} where \eqn{W\in \mathbb{R}\times {p\times k}} and \eqn{k<p}.
 }
 \references{
-Zhao, Y., & Udell, M. (2020). Matrix Completion with Quantified Uncertainty through Low Rank Gaussian Copula. arXiv preprint arXiv:2006.10829.
+Zhao, Y., & Udell, M. (2020). Matrix Completion with Quantified Uncertainty through Low Rank Gaussian Copula. NeurIPS 2020.
 }
 \author{
 Yuxuan Zhao, \email{yz2295@cornell.edu} and Madeleine Udell, \email{udell@cornell.edu}

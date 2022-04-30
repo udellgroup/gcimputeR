@@ -4,14 +4,19 @@
 \alias{mask_MCAR}
 \title{Mask data}
 \usage{
-mask_MCAR(X, mask_fraction, max_try = 50, seed = NULL, allow_empty_row = FALSE)
+mask_MCAR(
+  X,
+  mask_fraction,
+  seed = NULL,
+  allow_empty_row = FALSE,
+  silence_rate = 0.01,
+  mask_cols = NULL
+)
 }
 \arguments{
 \item{X}{data to be masked}
 
 \item{mask_fraction}{Fraction of observed entries to be masked}
-
-\item{max_try}{Number of attempts to conduct mask, if an empty row appears after a masking attempt}
 
 \item{seed}{Seed for mask}
 

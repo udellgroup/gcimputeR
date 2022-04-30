@@ -2,36 +2,42 @@
 % Please edit documentation in R/impute_mixedgc.R
 \name{impute_mixedgc}
 \alias{impute_mixedgc}
-\title{Impute mixed type data with Gaussian copula}
+\title{Gaussian copula for incomplete mixed data}
 \usage{
 impute_mixedgc(
   X,
-  maxit = 50,
-  eps = 0.01,
   nlevels = 20,
-  runiter = 0,
   trunc_method = "Iterative",
   n_sample = 5000,
+  n_update = 1,
+  maxit = 50,
+  eps = 0.01,
   verbose = FALSE,
+  runiter = 0,
+  corr = NULL,
   ...
 )
 }
 \arguments{
 \item{X}{A matrix or data.frame with missing values. Observed entry of \code{X} should either be numerical value or numerical ordinal level. Make sure there is no empty row nor character level in \code{X}.}
 
+\item{nlevels}{A column which has larger number of unique values than \code{nlevels} will be classfied as continuous, otherwise ordinal.}
+
+\item{trunc_method}{Method for evaluating truncated normal moments: \code{'Iterative'} or \code{'Sampling'}.}
+
+\item{n_sample}{Number of MC samples, only used when \code{trunc_method} is \code{'Sampling'}}
+
+\item{n_update}{The number of updates, only used when \code{trunc_method} is \code{'Iterative'}}
+
 \item{maxit}{Maximum number of iterations}
 
 \item{eps}{Convergence threshold}
 
-\item{nlevels}{A column which has larger number of unique values than \code{nlevels} will be classfied as continuous, otherwise ordinal.}
-
-\item{runiter}{When set as a positive integer, the algorithm will run \code{runiter} iterations exactly.}
-
-\item{trunc_method}{Method for evaluating truncated normal moments}
-
-\item{n_sample}{Number of samples to use for sampling methods for evaluating truncated normal moments}
-
 \item{verbose}{Whether to print progress information}
+
+\item{runiter}{When set as a positive integer, the algorithm will run the specified number of iterations exactly.}
+
+\item{corr}{If not \code{NULL}, impute missing values using \code{corr} as the copula correlation}
 
 \item{...}{Additional arguments for development use}
 }
@@ -44,35 +50,27 @@ A list containing:
 }
 }
 \description{
-Impute the missing values of a continuous and ordinal mixed dataset through Gaussian copula model.
+Fit a Gaussian copula model from (continuous and ordinal) mixed data and impute the missing entries using the fitted model
 }
 \details{
-Impute the missing entries of a continuous and ordinal mixed data by fitting a Gaussian copula model to the data. The algorithm first scales original observation \code{X} to copula observation \code{Z} whose marginals are all standard normal. For continuous columns of \code{Z}, each observed entry records a value. While for ordinal columns of \code{Z}, each observed entry records an interval. The second step is to estimate the Gaussian copula correlation matrix using observed information of \code{Z}. With estimated correlation matrix, the third step imputes missing entries of \code{Z}. The last step imputes the missing entries of \code{X} based on the imputed entries of \code{Z}.
+Impute the missing entries of continuous and ordinal mixed data by fitting a Gaussian copula model to the data.
 }
 \examples{
 # Simulate Data
 library(MASS)
-Sigma = matrix(c(1,.8,.8,.8,1,.64,.8,.64,1), nrow = 3)
-Z = mvrnorm(n=2000, mu = rep(0,3), Sigma = Sigma)
-X = Z # X has the same first column as Z, as standard normal marginal
-X[,2] = continuous2ordinal(Z[,2], k = 2) # binary marginal
-X[,3] = continuous2ordinal(Z[,3], k = 5) # ordinal marginal with 5 levels
-
-# Mask 10\% Data in each column
-Xobs = X
-Xobs[1:100,1] = NA
-Xobs[101:200,2] = NA
-Xobs[201:300,3] = NA
-
+# Generate 15-dim mixed data and mask 10\% observation
+var_types = list('cont'=1:5, 'ord'=6:10, 'bin'=11:15)
+X = generate_mixed_from_gc(var_types = var_types, n = 500)
+Xmask = mask_MCAR(X, mask_fraction = 0.2)
 # Fit Gaussian copula
-fit = impute_mixedgc(Xobs)
+fit = impute_mixedgc(Xmask, verbose = TRUE)
 
 # Compute imputation Error
-cal_mae_scaled(xhat = fit$Ximp, xobs = Xobs, xtrue = X)
+cal_mae_scaled(xhat = fit$Ximp, xobs = Xmask, xtrue = X)
 
 }
 \references{
-Zhao, Y., & Udell, M. (2019). Missing Value Imputation for Mixed Data Through Gaussian Copula. arXiv preprint arXiv:1910.12845.
+Zhao, Y., & Udell, M. (2020). Missing Value Imputation for Mixed Data via Gaussian Copula. KDD 2020
 }
 \author{
 Yuxuan Zhao, \email{yz2295@cornell.edu} and Madeleine Udell, \email{udell@cornell.edu}

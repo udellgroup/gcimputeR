@@ -2,22 +2,22 @@
 % Please edit documentation in R/initZ_ordinal.R
 \name{initZ_ordinal}
 \alias{initZ_ordinal}
-\title{Simulate random value for observed ordinal entires of \code{Z}}
+\title{Generate values for latent \code{Z} at observed ordinal entires}
 \usage{
-initZ_ordinal(r_lower, r_upper, seed = 1, method = "univariate_mean")
+initZ_ordinal(Lower, Upper, seed = NULL, method = "univariate_mean")
 }
 \arguments{
-\item{r_lower}{Lower boundary of truncated intervals for ordinal columns}
+\item{Lower}{Lower boundary of truncated intervals}
 
-\item{r_upper}{Upper boundary of truncated intervals for ordinal columns}
+\item{Upper}{Upper boundary of truncated intervals}
 
-\item{seed}{random seed used. Default is 1}
+\item{seed}{random seed used}
 
 \item{method}{method for initializing the mean}
 }
 \value{
-A matrix containing ordinal columns of \code{Z} whose entries are randomly generated but lie in the truncated interval.
+Matrix \code{Z} with the same shape as \code{lower}
 }
 \description{
-Each observed ordinal entry of \code{Z} follows truncated normal distribution with mean 0, variance 1 and truncated interval provided in \code{r_lower} and \code{r_upper}. Exact values of observed ordinal entries of \code{Z} are needed to implement the EM algorith. The initial values are ramdom values from truncated normal distribution.
+Each observed ordinal entry of \code{Z} follows truncated normal distribution with mean 0, variance 1 and truncated interval provided in \code{lower} and \code{upper}. Fill out those entries by their univariate mean if \code{method = "univariate_mean"} and by random sampples if \code{method = "sampling"}
 }

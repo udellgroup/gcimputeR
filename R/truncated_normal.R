@@ -1,7 +1,7 @@
 #' Truncated normal mean and variance
 #' @description Compute the mean and variance of one dimensional truncated normal random variable
 #' @param mu Mean of the normal distribution
-#' @param sigma Standard deviation of the normal distribution
+#' @param std Standard deviation of the normal distribution
 #' @param a Left endpoint of the truncated interval
 #' @param b Right endpoint of the truncated interval
 #' @param tol Computation is only conducted if the truncated normal probability is larger than \code{tol}
@@ -12,9 +12,9 @@
 #'   \item{\code{var}}{The truncated normal varaince or `NULL` }
 #' }
 #' @export
-moments_truncnorm <- function(mu, sigma, a, b, tol=1e-6, mean_only=FALSE){
-  alpha = (a-mu)/sigma
-  beta = (b-mu)/sigma
+moments_truncnorm <- function(mu, std, a, b, tol=1e-6, mean_only=FALSE){
+  alpha = (a-mu)/std
+  beta = (b-mu)/std
   Z = pnorm(beta) - pnorm(alpha)
 
   if (is.infinite(Z))stop('Invalid input')
@@ -27,15 +27,14 @@ moments_truncnorm <- function(mu, sigma, a, b, tol=1e-6, mean_only=FALSE){
     if (is.infinite(pdf_alpha) | is.infinite(pdf_beta)) stop('Invalid input')
     if (is.infinite(alpha) & is.infinite(beta)) stop('Invalid input')
     r1 = (pdf_beta - pdf_alpha)/Z
-    mean_ = mu - r1 * sigma
+    mean_ = mu - r1 * std
     out = list('mean' = mean_)
     #
     if (!mean_only) {
       if (beta >= Inf) r2 = (-alpha * pdf_alpha) / Z
       else if (alpha<=-Inf) r2 = (beta * pdf_beta) / Z
       else r2 = (beta * pdf_beta - alpha * pdf_alpha) / Z
-      var_ = (sigma**2) * (1 - r2 - (r1**2))
-      out[['var']] = var_
+      out[['std']] = std * sqrt(1 - r2 - (r1**2))
     }
   }
   out
@@ -44,7 +43,7 @@ moments_truncnorm <- function(mu, sigma, a, b, tol=1e-6, mean_only=FALSE){
 #' Truncated normal mean and variance
 #' @description Compute the mean and variance of one dimensional truncated normal random variable
 #' @param mu Mean vector of the normal distribution
-#' @param sigma Standard deviation vector of the normal distribution
+#' @param std Standard deviation vector of the normal distribution
 #' @param a Left endpoint vector of the truncated interval
 #' @param b Right endpoint vector of the truncated interval
 #' @param tol Computation is only conducted if the truncated normal probability is larger than \code{tol}
@@ -55,14 +54,14 @@ moments_truncnorm <- function(mu, sigma, a, b, tol=1e-6, mean_only=FALSE){
 #'   \item{\code{var}}{The truncated normal varaince with the same length of `mu` or `NULL` }
 #' }
 #' @export
-moments_truncnorm_vec <- function(mu, sigma, a, b, tol=1e-6, mean_only=FALSE){
-  alpha = (a-mu)/sigma
-  beta = (b-mu)/sigma
+moments_truncnorm_vec <- function(mu, std, a, b, tol=1e-6, mean_only=FALSE){
+  alpha = (a-mu)/std
+  beta = (b-mu)/std
   Z = pnorm(beta) - pnorm(alpha)
   p = length(Z)
 
   if (any(is.infinite(Z)) | min(Z)<0)stop('Invalid input')
-  work_loc = (Z>tol) & (Z<1)
+  work_loc = which((Z>tol) & (Z<1))
   trivial_loc = Z==1
   fail_loc = Z<=tol
 
@@ -71,7 +70,7 @@ moments_truncnorm_vec <- function(mu, sigma, a, b, tol=1e-6, mean_only=FALSE){
   if (any(is.infinite(pdf_alpha)) | any(is.infinite(pdf_beta)))stop('Invalid input')
   mean_ = numeric(p)
   r1 = (pdf_beta - pdf_alpha)/Z[work_loc]
-  mean_[work_loc] = mu[work_loc] - r1 * sigma[work_loc]
+  mean_[work_loc] = mu[work_loc] - r1 * std[work_loc]
   mean_[fail_loc] = Inf
   mean_[trivial_loc] = mu[trivial_loc]
   out = list('mean' = mean_)
@@ -102,16 +101,56 @@ moments_truncnorm_vec <- function(mu, sigma, a, b, tol=1e-6, mean_only=FALSE){
       loc_list[['finite']] = loc
     }
 
-    var_ = numeric(p)
+    std_ = numeric(p)
     for (name in names(loc_list)){
-      loc = loc_list$name
+      loc = loc_list[[name]]
       abs_loc = work_loc[loc]
-      var_[abs_loc] = (sigma[abs_loc]**2) * (1 - r2_list$name - (r1[loc]**2))
+      std_[abs_loc] = std[abs_loc] * sqrt(1 - r2_list[[name]] - (r1[loc]**2))
     }
-    var_[fail_loc] = Inf
-    var_[trivial_loc] = sigma[trivial_loc]**2
-    out[['var']] = var_
+    std_[fail_loc] = Inf
+    std_[trivial_loc] = std[trivial_loc]
+    out[['std']] = std_
   }
 
   out
 }
+
+#' Compute multivariate truncated normal mean and cov
+#'
+#' @description  compute multivariate truncated normal mean and cov by sampling
+#' @param mean Normal mean vector
+#' @param cov Normal covariance matrix
+#' @param lower Lower boundary of truncated intervals
+#' @param upper Upper boundary of truncated intervals
+#' @param n_sample Number of samples to use for sampling methods
+#' @return A list containing
+#' \describe{
+#'   \item{\code{mean}}{Mean vector}
+#'   \item{\code{cov}}{Covariance matrix}
+#' }
+#' @export
+get_trunc_2dmoments <- function(mean, cov, lower, upper, method = 'Sampling', n_sample=5000){
+  p = length(mean)
+  if (p==1){
+    out = moments_truncnorm(c(mean), c(cov), c(lower), c(upper))
+    return(list(mean = out$mean, cov = matrix(out$std^2, 1, 1)))
+  }
+  switch (method,
+          'Sampling' = {
+            z = TruncatedNormal::rtmvnorm(n = n_sample, mu = mean, sigma = cov, lb = lower, ub = upper)
+            if (length(dim(z)) != 2 | ncol(z)!=p) stop('unexpected sample dimension')
+            r = list('mean' = colMeans(z), 'cov' = cov(z))
+          },
+          'Diagonal' = {
+            r = moments_truncnorm_vec(mu = mean, std = sqrt(diag(cov)), a = lower, b = upper)
+            r = list('mean'=r$mean, 'cov'=diag(r$std^2))
+          },
+          stop(paste0("Invalid method vlaue: ", method))
+  )
+  return(r)
+}
+
+"Explicit = {
+            r = tmvtnorm::mtmvnorm(mean = mean, sigma = cov, lower = lower, upper = upper)
+            names(r) <- c('mean', 'cov')
+          },"
