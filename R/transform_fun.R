@@ -143,7 +143,51 @@ observed_to_latent <- function(X, d_index, method='univariate_mean'){
 #' @param mu mean vector for categorical
 #' @param cat_index_list list indicating the number of levels for each categorical variable
 #' @return Imputed data matrix
-get_cat_bounds <- function(X_cat, mu, cat_index_list, check=FALSE){
+get_cat_bounds <- function(X_cat, mu, cat_index_list, check=FALSE, old = FALSE){
+  if (old) return(get_cat_bounds_old(X_cat, mu, cat_index_list, check))
+  d_cat = sum(purrr::map_int(cat_index_list, length))
+  if (d_cat != length(mu)) stop('invalid input')
+  p_cat = length(cat_index_list)
+  if (p_cat != ncol(X_cat)) stop('invalid input')
+  n = nrow(X_cat)
+  lower = matrix(NA, n, d_cat)
+  upper = matrix(NA, n, d_cat)
+  incat_index_list = adjust_index_list(cat_index_list)
+  for (j in 1:p_cat){
+    index_o = !is.na(X_cat[,j])
+    x_cat_obs = X_cat[index_o,j]
+    n_obs = length(x_cat_obs)
+    # initialize to (0, Inf): at argmax, we want (-inf, inf), at other loc, we want (mu_j - mu_argmax, inf)
+    # index in 1,...,d_cat
+    index_cat = incat_index_list[[j]]
+    dj_cat = length(index_cat)
+    l_o = matrix(0, n_obs, dj_cat)
+    u_o = l_o + Inf
+
+    # adjust for mean
+    # length d_cat
+    mu_j = mu[index_cat]
+    mu_diff = matrix(mu_j, n_obs, dj_cat, byrow = TRUE)  - matrix(mu_j[x_cat_obs], n_obs, dj_cat, byrow = FALSE)
+    l_o = l_o + mu_diff
+    # no constraints at argmax, thus -Inf lower
+    argmax_coor = matrix(c(1:n_obs, x_cat_obs), nrow = n_obs)
+    l_o[argmax_coor] = -Inf
+
+    lower[index_o, index_cat] = l_o
+    upper[index_o, index_cat] = u_o
+  }
+
+  if (check){
+    for (i in 1:n){
+      ind1 = is.na(lower[i,])
+      ind2 = get_cat_slicing_index(X_cat[i,], cat_index_list, keep = 'missing', d_cat=d_cat)$cat
+      if (!all(ind1==ind2)) stop('something wrong!')
+    }
+  }
+  list(lower = lower, upper = upper)
+}
+
+get_cat_bounds_old <- function(X_cat, mu, cat_index_list, check=FALSE){
   d_cat = sum(purrr::map_int(cat_index_list, length))
   if (d_cat != length(mu)) stop('invalid input')
   p_cat = length(cat_index_list)

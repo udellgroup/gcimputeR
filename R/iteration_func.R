@@ -42,7 +42,8 @@ latent_operation <- function(task,
   if (!is.null(cat_input)){
     cat_input_row = list(x_cat=NULL,
                          cat_index_list=cat_input$cat_index_list,
-                         cat_index_all=cat_input$cat_index_all)
+                         cat_index_all=cat_input$cat_index_all,
+                         old = cat_input$old) #***
   }else cat_input_row = NULL
 
   for (i in 1:n){

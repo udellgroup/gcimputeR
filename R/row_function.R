@@ -68,7 +68,8 @@ latent_operation_row <- function(task,
     cat_index_list = cat_input[['cat_index_list']]
     cat_obs = !is.na(x_cat)
     # A should have dim |cat_o| * |cat_o|
-    A = x_to_A(x = x_cat[cat_obs], cat_index_list = cat_index_list[cat_obs], d_cat = sum(ord_in_obs))
+    A = x_to_A(x = x_cat[cat_obs], cat_index_list = cat_index_list[cat_obs],
+               d_cat = sum(ord_in_obs), old = cat_input[['old']]) #***
     # assuming A satisfying A %*% A = I
   }else A = NULL
 
@@ -395,7 +396,7 @@ est_z_row_ord_nocont <- function(lower, upper, corr=NULL,
       cat_index_list = cat_input[['cat_index_list']]
       cat_obs = !is.na(x_cat)
       # A should have dim |cat_o| * |cat_o|
-      A = x_to_A(x = x_cat[cat_obs], cat_index_list = cat_index_list[cat_obs], d_cat = sum(obs_indices))
+      A = x_to_A(x = x_cat[cat_obs], cat_index_list = cat_index_list[cat_obs], d_cat = sum(obs_indices), old = cat_input[['old']])
       # assuming A satisfying A %*% A = I
       if (!is.null(A)) sigma_oo = A_sigma_tA_at_cat(sigma_oo, A)
     }else A = NULL

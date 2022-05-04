@@ -20,24 +20,42 @@ project_to_nominal_corr <- function(sigma, cat_index_list){
   sigma
 }
 
+project_to_nominal_corr_simple <- function(sigma, cat_index_list, eps = 1e-3){
+  p = ncol(sigma)
+  for (i in seq_along(cat_index_list)){
+    index = cat_index_list[[i]]
+    sigma[index,index] = diag(length(index))
+  }
+  o_eigen = eigen(sigma)$values
+  if (min(o_eigen)<0){
+    sigma = sigma - diag(p) * (min(o_eigen)-eps)
+    sigma = cov2cor(sigma)
+  }
+  sigma
+}
+
 #' @export
-Z_to_original_trunc <- function(Z, X_cat, cat_index_list){
+Z_to_original_trunc <- function(Z, X_cat, cat_index_list, old = FALSE){
   n = nrow(Z)
   for (i in 1:n){
     z = Z[i,]
     x_cat = X_cat[i,]
     obs_indices = !is.na(z)
     cat_obs = !is.na(x_cat)
-    A = x_to_A(x = x_cat[cat_obs], cat_index_list = cat_index_list[cat_obs])
-    if (!is.null(A)) z[obs_indices] = A %*% z[obs_indices]
-    Z[i,] = z
+    if (any(cat_obs)){
+      A = x_to_A(x = x_cat[cat_obs], cat_index_list = cat_index_list[cat_obs], old = old)
+      if (!is.null(A)) z[obs_indices] = A %*% z[obs_indices]
+      Z[i,] = z
+    }
   }
   Z
 }
 
-# x is required to be complete
+# Find matrix A such that A^2=I and Ax is interval truncated. The algorithm forms A = diag(A1,...,Ap)
+# for x=(x1,...,xp).
+# x must not have missing entries
 #' @export
-x_to_A <- function(x, cat_index_list, d_cat=NULL, adjust=TRUE, test=TRUE){
+x_to_A <- function(x, cat_index_list, d_cat=NULL, adjust=TRUE, test=TRUE, old = FALSE){
   if (adjust) cat_index_list = adjust_index_list(cat_index_list)
   if (test){
     if (!is.null(d_cat)){
@@ -47,23 +65,35 @@ x_to_A <- function(x, cat_index_list, d_cat=NULL, adjust=TRUE, test=TRUE){
   if (is.null(d_cat)) d_cat = sum(purrr::map_int(cat_index_list, length))
   if (any(is.na(x))) stop('invalid x')
 
-  index_notbase = get_cat_slicing_index(x, cat_index_list, keep = x!=1, d_cat = d_cat)
-  if (any(index_notbase$incat)){
-    A = diag(nrow = d_cat, ncol = d_cat)
-    # for each xi != 1
-    for (i in which(index_notbase$incat)){
-      index = cat_index_list[[i]]
-      x_index = x[i]-1
-      Ai = -diag(length(index))
-      Ai[,x_index] = 1
-      A[index,index] = Ai
+  if (old){
+    index_notbase = get_cat_slicing_index(x, cat_index_list, keep = x!=1, d_cat = d_cat)
+    if (any(index_notbase$incat)){
+      A = diag(nrow = d_cat, ncol = d_cat)
+      # for each xi != 1
+      for (i in which(index_notbase$incat)){
+        index = cat_index_list[[i]]
+        x_index = x[i]-1
+        Ai = -diag(length(index))
+        Ai[,x_index] = 1
+        A[index,index] = Ai
+      }
+    }else{
+      A = NULL
     }
   }else{
-    A = NULL
+    A = diag(nrow = d_cat, ncol = d_cat)
+    p = length(x)
+    for (i in 1:p){
+      index = cat_index_list[[i]]
+      Ai = -diag(length(index))
+      Ai[,x[i]] = 1
+      A[index,index] = Ai
+    }
   }
   A
 }
 
+# For cov(x)=sigma and x contains xcat as a subvector, compute cov(xnew) with xcat replaced by A*xcat
 #' @export
 A_sigma_tA_at_cat <- function(sigma, A, cat_index = NULL, A_at_left = TRUE){
   if (is.null(A)) return(sigma)
@@ -79,19 +109,7 @@ A_sigma_tA_at_cat <- function(sigma, A, cat_index = NULL, A_at_left = TRUE){
   else  t(A_all) %*% sigma %*% A_all
 }
 
-project_to_nominal_corr_simple <- function(sigma, cat_index_list, eps = 1e-3){
-  p = ncol(sigma)
-  for (i in seq_along(cat_index_list)){
-    index = cat_index_list[[i]]
-    sigma[index,index] = diag(length(index))
-  }
-  o_eigen = eigen(sigma)$values
-  if (min(o_eigen)<0){
-    sigma = sigma - diag(p) * (min(o_eigen)-eps)
-    sigma = cov2cor(sigma)
-  }
-  sigma
-}
+
 
 #' Return a complete Z matrix based on SVD initialization
 #'
