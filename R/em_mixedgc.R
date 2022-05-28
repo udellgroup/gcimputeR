@@ -116,7 +116,6 @@ em_mixedgc = function(Z, Lower, Upper,
 #' @param maxit maximum number of iterations
 #' @param eps Convergence threshold
 #' @param verbose If true, output each iteration's detail
-#' @param early.stop If true, stop the algorithm when the likelihood change is small.
 #' @return A list containing fitted copula parameters, the likelihood (objective function), Z matrix with updated ordinal entries and the conditional variance corresponding to the observed Z matrix.
 #' \describe{
 #'   \item{\code{W}}{Fitted latent low rank subspace matrix}
@@ -130,7 +129,7 @@ em_mixedgc = function(Z, Lower, Upper,
 #' @references Zhao, Y., & Udell, M. (2020). Matrix Completion with Quantified Uncertainty through Low Rank Gaussian Copula. arXiv preprint arXiv:2006.10829.
 #' @export
 em_mixedgc_ppca = function(rank, Z_continuous, r_lower, r_upper,
-                           start =NULL, maxit=100, eps=1e-6,early.stop = FALSE, verbose = FALSE){
+                           start =NULL, maxit=100, eps=0.01, verbose = FALSE){
   if (is.null(Z_continuous)){
     p = dim(r_upper)[2]
     k = p
@@ -193,7 +192,7 @@ em_mixedgc_ppca = function(rank, Z_continuous, r_lower, r_upper,
     W1 = est_iter$W
     loglik = c(loglik, est_iter$loglik)
     #
-    err = sum((W1-W)^2)/sum(W^2)
+    err = sqrt(sum((W1-W)^2)/sum(W^2))
     #diffW[[l]] = c(err, grassman_dist(W1,W))
     #estvar = c(estvar, est_iter$sigma)
     if (verbose){
@@ -204,13 +203,6 @@ em_mixedgc_ppca = function(rank, Z_continuous, r_lower, r_upper,
     if (l > maxit){
       warning('Max iter reached in EM')
       break
-    }
-    if (early.stop & l>1){
-      r = abs((rev(loglik)[1] - rev(loglik)[2]))/abs(rev(loglik)[2])
-      if (r < 0.01){
-        if (verbose) print('early stop because changed likelihood below 1%')
-        break
-      }
     }
     W = W1
     sigma = est_iter$sigma

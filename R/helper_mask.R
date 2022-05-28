@@ -4,11 +4,11 @@
 #' @param X data to be masked
 #' @param mask_fraction Fraction of observed entries to be masked
 #' @param seed Seed for mask
-#' @param allow_empty_row If False, allow some masked rows to be empty
+#' @param silence_rate The random masking is done while ensuring there is no empty row, which may lead to smaller than specified \code{mask_fraction}. If the difference is more than \code{silence_rate}, a message will be printed
+#' @param mask_cols If not \code{NULL}, the masking only happens in columns \code{mask_cols}
 #' @return masked data
 #' @export
-mask_MCAR = function(X, mask_fraction, seed=NULL,
-                     allow_empty_row=FALSE, silence_rate=0.01, mask_cols = NULL){
+mask_MCAR = function(X, mask_fraction, seed=NULL,silence_rate=0.01, mask_cols = NULL){
   if (is.null(dim(X))) return(mask_MCAR_vec(X, mask_fraction, seed))
   if (!is.null(seed)) set.seed(seed)
   X = to_numeric_matrix(X)
@@ -27,17 +27,15 @@ mask_MCAR = function(X, mask_fraction, seed=NULL,
   mask_coors = obs_coors[mask_indices]
   X_masked[mask_coors] = NA
   which_empty = which(apply(X_masked, 1, function(x){sum(!is.na(x))}) == 0)
-  if (!allow_empty_row){
-    for (row in which_empty){
-      obs_loc = which(!is.na(X[row,]))
-      if (length(obs_loc)==1) index = obs_loc else index = sample(obs_loc,1)
-      X_masked[row, index] = X[row, index]
-    }
-    if (is.null(mask_cols)) r = sum(is.na(X_masked) & !is.na(X))/sum(!is.na(X))
-    else r = sum(is.na(X_masked[,mask_cols]) & !is.na(X[,mask_cols]))/sum(!is.na(X[,mask_cols]))
-    if (r<mask_fraction-silence_rate){
-      print(paste0('Actual masking ratio ', round(r,4)))
-    }
+  for (row in which_empty){
+    obs_loc = which(!is.na(X[row,]))
+    if (length(obs_loc)==1) index = obs_loc else index = sample(obs_loc,1)
+    X_masked[row, index] = X[row, index]
+  }
+  if (is.null(mask_cols)) r = sum(is.na(X_masked) & !is.na(X))/sum(!is.na(X))
+  else r = sum(is.na(X_masked[,mask_cols]) & !is.na(X[,mask_cols]))/sum(!is.na(X[,mask_cols]))
+  if (r<mask_fraction-silence_rate){
+    print(paste0('Actual masking ratio ', round(r,4)))
   }
   X_masked
 }

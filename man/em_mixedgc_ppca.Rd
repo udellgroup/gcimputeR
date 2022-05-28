@@ -11,8 +11,7 @@ em_mixedgc_ppca(
   r_upper,
   start = NULL,
   maxit = 100,
-  eps = 1e-06,
-  early.stop = FALSE,
+  eps = 0.01,
   verbose = FALSE
 )
 }
@@ -30,8 +29,6 @@ em_mixedgc_ppca(
 \item{maxit}{maximum number of iterations}
 
 \item{eps}{Convergence threshold}
-
-\item{early.stop}{If true, stop the algorithm when the likelihood change is small.}
 
 \item{verbose}{If true, output each iteration's detail}
 }

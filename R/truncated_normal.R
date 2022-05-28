@@ -129,12 +129,13 @@ moments_truncnorm_vec <- function(mu, std, a, b, tol=1e-6, mean_only=FALSE){
 #'   \item{\code{cov}}{Covariance matrix}
 #' }
 #' @export
-get_trunc_2dmoments <- function(mean, cov, lower, upper, method = 'Sampling', n_sample=5000){
+get_trunc_2dmoments <- function(mean, cov, lower, upper, n_sample=5000){
   p = length(mean)
   if (p==1){
     out = moments_truncnorm(c(mean), c(cov), c(lower), c(upper))
     return(list(mean = out$mean, cov = matrix(out$std^2, 1, 1)))
   }
+  method = 'Sampling'
   switch (method,
           'Sampling' = {
             z = TruncatedNormal::rtmvnorm(n = n_sample, mu = mean, sigma = cov, lb = lower, ub = upper)

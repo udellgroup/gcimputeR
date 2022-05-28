@@ -10,6 +10,8 @@ observed_to_latent(X, d_index, method = "univariate_mean")
 \item{X}{Original observation matrix}
 
 \item{d_index}{Boolean vector with \code{TRUE} at ordinal dimensions}
+
+\item{method}{method for initializing the mean}
 }
 \value{
 A list containing

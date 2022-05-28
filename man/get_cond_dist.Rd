@@ -4,15 +4,7 @@
 \alias{get_cond_dist}
 \title{Conditional normal mean and cov}
 \usage{
-get_cond_dist(
-  z,
-  mu,
-  cov,
-  index_o,
-  index_m = NULL,
-  test_logical = TRUE,
-  drop = TRUE
-)
+get_cond_dist(z, mu, cov, index_o, index_m = NULL, drop = TRUE)
 }
 \arguments{
 \item{z}{data observation}
@@ -24,6 +16,8 @@ get_cond_dist(
 \item{index_o}{observed dimensions}
 
 \item{index_m}{missing dimensions}
+
+\item{drop}{Whether to drop the dimension of computed conditional mean}
 }
 \value{
 A list containing

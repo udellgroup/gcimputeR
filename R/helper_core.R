@@ -2,6 +2,12 @@ observed <- function(x) x[!is.na(x)]
 
 sum_list_len <- function(s) sum(purrr::map_int(s, length))
 
+
+#' DataFrame to Matrix
+#'
+#' @description Safelly turn a data frame to a numerical matrix
+#' @param X a data frame
+#' @export
 to_numeric_matrix <- function(X){
   Xnew = as.numeric(as.matrix(X))
   dim(Xnew) = dim(X)
@@ -90,7 +96,6 @@ scale_corr = function(W, sigma){
 #' @param c A vector of length n
 #' @param index a subset of \{1,2,...,n\}
 #' @return A k*k matrix
-#' @export
 sum_3d_scale = function(M, c, index){
   apply(M, c(2,3), function(x){sum(x[index] * c[index])})
 }
@@ -102,7 +107,6 @@ sum_3d_scale = function(M, c, index){
 #' @param c A vector of length n
 #' @param index a subset of \{1,2,...,n\}
 #' @return A k*1 matrix
-#' @export
 sum_2d_scale = function(M, c, index){
   v = apply(M, 2, function(x){sum(x[index] * c[index])})
   matrix(v,ncol = 1)
@@ -150,12 +154,14 @@ imputeZ_mixedgc_ppca = function(Z, W, S){
 #' @param z data observation
 #' @param index_o observed dimensions
 #' @param index_m missing dimensions
+#' @param drop Whether to drop the dimension of computed conditional mean
 #' @return A list containing
 #' \describe{
 #'   \item{\code{mean}}{conditional mean}
 #'   \item{\code{cov}}{conditional covariance }
 #' }
-get_cond_dist <- function(z, mu, cov, index_o, index_m=NULL, test_logical=TRUE, drop=TRUE){
+get_cond_dist <- function(z, mu, cov, index_o, index_m=NULL,drop=TRUE){
+  test_logical = TRUE
   if (test_logical){
     if (!is.logical(index_o)) stop('use logical index')
     if (!any(index_o)) print('empty set to conditional on')

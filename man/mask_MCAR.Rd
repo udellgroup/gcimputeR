@@ -4,14 +4,7 @@
 \alias{mask_MCAR}
 \title{Mask data}
 \usage{
-mask_MCAR(
-  X,
-  mask_fraction,
-  seed = NULL,
-  allow_empty_row = FALSE,
-  silence_rate = 0.01,
-  mask_cols = NULL
-)
+mask_MCAR(X, mask_fraction, seed = NULL, silence_rate = 0.01, mask_cols = NULL)
 }
 \arguments{
 \item{X}{data to be masked}
@@ -20,7 +13,9 @@ mask_MCAR(
 
 \item{seed}{Seed for mask}
 
-\item{allow_empty_row}{If False, allow some masked rows to be empty}
+\item{silence_rate}{The random masking is done while ensuring there is no empty row, which may lead to smaller than specified \code{mask_fraction}. If the difference is more than \code{silence_rate}, a message will be printed}
+
+\item{mask_cols}{If not \code{NULL}, the masking only happens in columns \code{mask_cols}}
 }
 \value{
 masked data

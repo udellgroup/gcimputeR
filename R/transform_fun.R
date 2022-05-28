@@ -136,6 +136,7 @@ Ximp_transform_cat <- function(Z_cat, X_cat, cat_index_list, old = FALSE){
 #'
 #' @description  Given data matrix \code{X}, prepare the latent matrix \code{Z} and the value bounds for the ordinal dimensions
 #' @inheritParams range_transform
+#' @inheritParams initZ_interval_truncated
 #' @param d_index Boolean vector with \code{TRUE} at ordinal dimensions
 #' @inheritParams initZ_noncat
 #' @return A list containing

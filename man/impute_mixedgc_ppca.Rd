@@ -8,10 +8,9 @@ impute_mixedgc_ppca(
   X,
   rank,
   maxit = 50,
-  eps = 1e-06,
+  eps = 0.01,
   nlevels = 20,
-  verbose = FALSE,
-  early.stop = TRUE
+  verbose = FALSE
 )
 }
 \arguments{

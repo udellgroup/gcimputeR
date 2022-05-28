@@ -117,7 +117,7 @@ impute_mixedgc = function(X, nlevels = 20,
 #' @references Zhao, Y., & Udell, M. (2020). Matrix Completion with Quantified Uncertainty through Low Rank Gaussian Copula. NeurIPS 2020.
 #' @export
 
-impute_mixedgc_ppca = function(X, rank, maxit=50, eps=1e-6, nlevels = 20,verbose = FALSE, early.stop = TRUE){
+impute_mixedgc_ppca = function(X, rank, maxit=50, eps=0.01, nlevels = 20,verbose = FALSE){
   n = dim(X)[1]
   p = dim(X)[2]
   X = as.numeric(as.matrix(X))
@@ -163,7 +163,7 @@ impute_mixedgc_ppca = function(X, rank, maxit=50, eps=1e-6, nlevels = 20,verbose
   #start = list(sig = 0, W = scale.corr(W =  matrix(rnorm(p*rank), ncol = rank), sig = 0)$W)
   fit_em = em_mixedgc_ppca(rank = rank,
                              Z_continuous =  Z_continuous, r_lower = r_lower, r_upper=r_upper,
-                             maxit = maxit, eps = eps, early.stop = early.stop,
+                             maxit = maxit, eps = eps,
                              start = start,verbose = verbose)
 
   W = fit_em$W
