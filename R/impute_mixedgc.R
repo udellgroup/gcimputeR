@@ -81,7 +81,7 @@ impute_mixedgc = function(X, nlevels = 20,
   }else{
     out = latent_operation('fillup',
                            Z, Lower, Upper, d_index,
-                           sigma = sigma,
+                           corr = corr,
                            n_update = n_update, n_sample = n_sample, trunc_method = trunc_method,
                            ...)
     Zimp = out$Zimp
@@ -94,24 +94,8 @@ impute_mixedgc = function(X, nlevels = 20,
   return(list(Ximp = Ximp, corr = corr, loglik = loglik, d_index=which(d_index)))
 }
 
-"sample_imputation <- function(corr, X){
-  # Do not allow empty row
-  if (any(apply(X, 1, function(x){sum(!is.na(x))}) == 0)) stop('remove empty row')
-  # Do not allow column with only one level
-  if (any(apply(X, 2, function(x){length(unique(x[!is.na(x)]))}) <= 1)) stop('remove column with only 0 or 1 unique value')
 
-  d_index = apply(X, 2, function(x) {length(unique(x)) <= nlevels})
-  c_index = !d_index
 
-  if (all(c_index)){
-    obj_latent = observed_to_latent(X, d_index)
-    Z = obj_latent$Z
-    Lower = obj_latent$Lower
-    Upper = obj_latent$Upper
-  }
-
-  stop('to be finished')
-}"
 
 #' Low rank Gaussian copula for incomplete mixed data
 #'
@@ -145,18 +129,19 @@ impute_mixedgc_ppca = function(X, rank, maxit=50, eps=1e-6, nlevels = 20,verbose
   if (any(apply(X, 2, function(x){length(unique(x[!is.na(x)]))}) <= 1)) stop('remove column with only 0 or 1 unique value')
 
   # find ordinal dimensions
-  d_index = which(apply(X, 2, function(x){length(unique(x))<=nlevels}))
-  k = length(d_index)
+  d_index = apply(X, 2, function(x){length(unique(x))<=nlevels})
+  k = sum(d_index)
   # find continuous dimensions
-  c_index = setdiff(1:p, d_index)
+  c_index = !d_index
   # marginal transformation
   if (k>0){
-    r = range_transform(matrix(X[,d_index], nrow = n), type = 'ordinal') # matrix of latent scalars corresponding to measured values
-    r_lower = r$r_lower
-    r_upper = r$r_upper
+    r = range_transform(matrix(X[,d_index,drop=FALSE], nrow = n),
+                        type = 'ordinal') # matrix of latent scalars corresponding to measured values
+    r_lower = r$Lower
+    r_upper = r$Upper
     cutoffs = list(k)
     for (j in 1:k){
-      c = unique(r$r_lower[,j])
+      c = unique(r_lower[,j])
       c = c[!is.na(c)] # remove NA
       cutoffs[[j]] = c[is.finite(c)] # remove -Inf
     }
@@ -168,7 +153,7 @@ impute_mixedgc_ppca = function(X, rank, maxit=50, eps=1e-6, nlevels = 20,verbose
   }
 
   if(k<p){
-    Z_continuous = range_transform(matrix(X[,c_index], nrow = n), type = 'continuous')$r_val
+    Z_continuous = range_transform(matrix(X[,c_index,drop=FALSE], nrow = n), type = 'continuous')$Z
   }else{
     Z_continuous = NULL
   }
@@ -188,7 +173,8 @@ impute_mixedgc_ppca = function(X, rank, maxit=50, eps=1e-6, nlevels = 20,verbose
   Zimp = imputeZ_mixedgc_ppca(Z = fit_em$Zobs, S = fit_em$S, W = W)
 
   # Impute X using Imputed Z
-  Xnew.p = Ximp_transform(Z = Zimp, X = X[,c(d_index,c_index)], d_index = d_index)
+  order_ = c(which(d_index),which(c_index))
+  Xnew.p = Ximp_transform(Z = Zimp, X = X[,order_], d_index = d_index)
 
   # Back to original permuation
   W1 = W

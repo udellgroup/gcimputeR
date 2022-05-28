@@ -4,7 +4,14 @@
 \alias{get_trunc_2dmoments}
 \title{Compute multivariate truncated normal mean and cov}
 \usage{
-get_trunc_2dmoments(mean, cov, lower, upper, n_sample = 5000)
+get_trunc_2dmoments(
+  mean,
+  cov,
+  lower,
+  upper,
+  method = "Sampling",
+  n_sample = 5000
+)
 }
 \arguments{
 \item{mean}{Normal mean vector}

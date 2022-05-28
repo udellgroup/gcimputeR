@@ -4,7 +4,15 @@
 \alias{cal_mae_scaled}
 \title{compute the scaled mean squared error(SMAE) scaled by the MAE of column}
 \usage{
-cal_mae_scaled(xhat, xobs, xtrue, round = FALSE, reduce = TRUE)
+cal_mae_scaled(
+  xhat,
+  xobs,
+  xtrue,
+  round = FALSE,
+  reduce = TRUE,
+  base_from_true = FALSE,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{xhat}{complete imputed data matrix}
@@ -14,6 +22,10 @@ cal_mae_scaled(xhat, xobs, xtrue, round = FALSE, reduce = TRUE)
 \item{xtrue}{complete true data matrix}
 
 \item{round}{whether round the values of \code{xhat} to integers}
+
+\item{base_from_true}{If \code{TRUE}, form baseline imputation from \code{xtrue}. Else, form baseline imputation from \code{xobs}.}
+
+\item{verbose}{If \code{TRUE}, throw out a warning when perfect baseline imputation appears}
 }
 \value{
 a vector with SMAE for each column

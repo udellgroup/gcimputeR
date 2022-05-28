@@ -1,12 +1,24 @@
-  #' EM algorithm to fit Gaussian copula
+simple_imp <- function(Z, col_mean=FALSE, std=0){
+  Zimp = Z
+  for (j in 1:ncol(Z)){
+    miss = is.na(Z[,j])
+    if (col_mean) mu = mean(Z[!miss,j]) else mu =0
+    if (std == 0) Zimp[miss,j] = mu
+    else Zimp[miss,j] = rnorm(sum(miss), mu, std)
+  }
+  Zimp
+}
+
+#' EM algorithm to fit Gaussian copula
 #'
 #' @description  fit the Gaussian copula model from incomplete mixed data
 #' @param Z Transformed latent matrix
-#' @inheritParams initZ_ordinal
+#' @inheritParams initZ_interval_truncated
 #' @inheritParams observed_to_latent
 #' @inheritParams impute_mixedgc
+#' @param corr_min_eigen  If the minimal eigenvalue of a correlation estimate is below \code{corr_min_eigen}, it will be regularized to have minimal eigenvalue equal to \code{corr_min_eigen}
 #' @param cat_input Input for categorical dimensions
-#' @param start Initial value of copula correlation.
+#' @param start Initial value of copula correlation
 #' @param scale_to_corr Whether to scale a covariance into a correlation matrix in each EM iteration. For development purpose. Use with caution.
 #' @return A list containing fitted copula correlation matrix, the likelihood(objective function), Z matrix with updated ordinal entries and a complete imputed Z matrix.
 #' \describe{
@@ -15,17 +27,20 @@
 #'   \item{\code{Z}}{Incomplete \code{Z} with approximated observed ordinal mean}
 #'   \item{\code{Zimp}}{Complete \code{Z} with observed entries the same as \code{Zobs} and missing entries imputed}
 #' }
-em_mixedgc = function(Z, Lower, Upper, d_index,
+em_mixedgc = function(Z, Lower, Upper,
+                      d_index, dcat_index=NULL,
                       cat_input = NULL,
                       start=NULL,
                       trunc_method='Iterative', n_sample=5000, n_update=1,
                       maxit=50, eps=0.01, verbose=FALSE, runiter=0,
+                      corr_min_eigen = 0.01,
                       scale_to_corr=TRUE){
   # Initialize with mean imputation for Z_continuous
   Z_lower = Lower
   Z_upper = Upper
   p = length(d_index)
   c_index = !d_index
+
   if(is.null(start)){
     Z_meanimp = Z
     Z_meanimp[is.na(Z_meanimp)] = 0
@@ -34,6 +49,16 @@ em_mixedgc = function(Z, Lower, Upper, d_index,
   }else{
     R = start$R
   }
+  o_eigen = eigen(R)
+  if (min(o_eigen$values) <0 ){
+    message('Bad initialization: Tiny negative eigenvalue potentially due to colinearity')
+    values = o_eigen$values
+    values[values<corr_min_eigen] = corr_min_eigen
+    R = cov2cor(o_eigen$vectors %*% diag(values) %*% t(o_eigen$vectors))
+  }
+  R = regularize_corr(R, corr_min_eigen = corr_min_eigen, verbose = verbose,
+                      prefix = 'Bad initialization potentially due to colinearity: ')
+  stopifnot(min(eigen(R)$values)>0)
   if (!is.null(cat_input)) R = project_to_nominal_corr(R, cat_input$cat_index_list)
 
   Zimp = Z
@@ -43,7 +68,8 @@ em_mixedgc = function(Z, Lower, Upper, d_index,
   repeat{
     l = l+1
     est_iter = latent_operation('em',
-                                Z, Z_lower, Z_upper, d_index,
+                                Z, Z_lower, Z_upper,
+                                d_index = d_index, dcat_index = dcat_index,
                                 cat_input = cat_input,
                                 corr = R,
                                 trunc_method = trunc_method, n_sample=n_sample, n_update=n_update)
@@ -52,6 +78,7 @@ em_mixedgc = function(Z, Lower, Upper, d_index,
     R1 = est_iter$corr
     if (scale_to_corr){
       R1 = cov2cor(R1)
+      R1 = regularize_corr(R1, corr_min_eigen = corr_min_eigen, verbose = verbose)
       if (!is.null(cat_input)) R1 = project_to_nominal_corr(R1, cat_input$cat_index_list)
       #if (!is.null(cat_input)) R1 = project_to_nominal_corr_simple(R1, cat_input$cat_index_list)
     }
@@ -102,7 +129,8 @@ em_mixedgc = function(Z, Lower, Upper, d_index,
 #' @author Yuxuan Zhao, \email{yz2295@cornell.edu} and Madeleine Udell, \email{udell@cornell.edu}
 #' @references Zhao, Y., & Udell, M. (2020). Matrix Completion with Quantified Uncertainty through Low Rank Gaussian Copula. arXiv preprint arXiv:2006.10829.
 #' @export
-em_mixedgc_ppca = function(rank, Z_continuous, r_lower, r_upper, start =NULL, maxit=100, eps=1e-6,early.stop = FALSE, verbose = FALSE){
+em_mixedgc_ppca = function(rank, Z_continuous, r_lower, r_upper,
+                           start =NULL, maxit=100, eps=1e-6,early.stop = FALSE, verbose = FALSE){
   if (is.null(Z_continuous)){
     p = dim(r_upper)[2]
     k = p
@@ -120,7 +148,7 @@ em_mixedgc_ppca = function(rank, Z_continuous, r_lower, r_upper, start =NULL, ma
 
   # Initialize observed ordinal values
   if (k > 0){
-    Z_ordinal = initZ_ordinal(r_upper = r_upper, r_lower = r_lower)
+    Z_ordinal = initZ_interval_truncated(Lower = r_lower, Upper = r_upper)
   } else Z_ordinal = NULL
 
   # Initialize with SVD imputation for Z

@@ -16,10 +16,12 @@
 #' }
 
 latent_operation <- function(task,
-                             Z, Lower, Upper, d_index,
+                             Z, Lower, Upper,
+                             d_index, dcat_index,
                              cat_input,
                              corr,
-                             trunc_method='Iterative', n_update=1, n_sample=5000){
+                             trunc_method='Iterative', n_update=1, n_sample=5000,
+                             n_MI = 1){
   n = nrow(Z)
   p = ncol(Z)
   # TODO: remove var alias
@@ -35,7 +37,7 @@ latent_operation <- function(task,
             out = list('Zimp'=Z,  'var_ordinal'=matrix(0,n,p))
           },
           'sample' = {
-            out = list('Zimp_sample'=array(NA, dim=c(n,p,num)))
+            out = list('Zimp_sample'= array(0, dim = c(n,p,n_MI)))
           }
   )
 
@@ -49,10 +51,12 @@ latent_operation <- function(task,
   for (i in 1:n){
     if (!is.null(cat_input_row)) cat_input_row[['x_cat']] = cat_input$X_cat[i,]
     row_out = latent_operation_row(task,
-                                   Z[i,], Z_lower[i,], Z_upper[i,], d_index,
+                                   Z[i,], Z_lower[i,], Z_upper[i,],
+                                   d_index=d_index, dcat_index=dcat_index,
                                    cat_input=cat_input_row,
                                    corr=corr,
-                                   trunc_method = trunc_method,n_update=n_update, n_sample=n_sample)
+                                   trunc_method = trunc_method,n_update=n_update, n_sample=n_sample,
+                                   n_MI = n_MI)
 
     switch (task,
             'em' = {
@@ -69,8 +73,7 @@ latent_operation <- function(task,
               }
             },
             'sample' = {
-              index_m = is.na(Z[i,])
-              if (any(index_m)) out[['Zimp_sample']][i,,] = row_out[['Zimp_sample']]
+              out[['Zimp_sample']][i,,] = row_out[['Zimp_sample']]
             }
     )
   }

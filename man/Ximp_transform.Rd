@@ -4,7 +4,7 @@
 \alias{Ximp_transform}
 \title{Transform imputed Z matrix to X in the observed space}
 \usage{
-Ximp_transform(Z, X, d_index, c_index = NULL)
+Ximp_transform(Z, X, d_index)
 }
 \arguments{
 \item{Z}{imputed Z matrix}

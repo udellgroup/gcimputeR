@@ -10,11 +10,13 @@ latent_operation(
   Lower,
   Upper,
   d_index,
+  dcat_index,
   cat_input,
   corr,
   trunc_method = "Iterative",
   n_update = 1,
-  n_sample = 5000
+  n_sample = 5000,
+  n_MI = 1
 )
 }
 \arguments{

@@ -104,3 +104,127 @@ generate_mixed_from_gc <- function(sigma=NULL, n=2000, seed=NULL, var_types = NU
   X
 }
 
+gen_nominal_copula_corr <- function(p_cat_vec, p_noncat, seed=NULL, eps=1e-2){
+  if (!is.null(seed)) set.seed(seed)
+  last = 0
+  l =  length(p_cat_vec)
+  cat_index_list = vector('list', l)
+  for (i in 1:l){
+    cat_index_list[[i]] = last + (1:p_cat_vec[i])
+    last = last + length(cat_index_list[[i]])
+  }
+  p_catall = sum(p_cat_vec)
+  p = p_catall + p_noncat
+  sigma = gcimputeR::generate_sigma(p = p)
+  #
+  "  A = diag(p)
+  for (i in 1:l){
+    index = cat_index_list[[i]]
+    o_eigen = eigen(sigma[index,index])
+    m = diag(1/sqrt(o_eigen$values)) %*% t(o_eigen$vectors)
+    A[index,index] = m
+  }
+  sigma = A %*% sigma %*% t(A)
+  for (i in 1:l){
+    index = cat_index_list[[i]]
+    sigma[index,index] = diag(length(index))
+  }"
+  sigma = project_to_nominal_corr(sigma, cat_index_list)
+  if (min(eigen(sigma)$values)<eps){
+    sigma = cov2cor(sigma + diag(p) * eps)
+  }
+  sigma
+}
+
+gen_nominal_copula <- function(n, p_cat_vec, p_noncat, p_ord=0,
+                               mu_scale = 0.5, seed=NULL,
+                               mu_cat = NULL, sigma=NULL, trans_cont=NULL,
+                               ord_num = 5,
+                               old = FALSE){
+  if (old) return(gen_nominal_copula_old(n, p_cat_vec, p_noncat, mask_fraction=0,
+                                         mu_scale, seed, mu_cat, sigma))
+  #print(mu_scale)
+  if (is.null(trans_cont)) trans_cont = function(x) x
+  if (!is.null(seed)) set.seed(seed)
+  l = length(p_cat_vec)
+  cat_index_list = vector('list', l)
+  last = 0
+  starts = numeric(l)
+  for (i in 1:l){
+    cat_index_list[[i]] = last + (1:p_cat_vec[i])
+    starts[i] = last + 1
+    last = last + length(cat_index_list[[i]])
+  }
+  p_cat = sum(p_cat_vec)
+  l_cat = length(p_cat_vec)
+  p = p_cat + p_noncat
+  #
+  if (is.null(mu_cat)){
+    mu_cat = rnorm(p_cat)*mu_scale
+    mu_cat[starts] = 0
+  }
+  if (is.null(sigma)) sigma = gen_nominal_copula_corr(p_cat_vec, p_noncat)
+  z = MASS::mvrnorm(n = n, mu = c(mu_cat, rep(0, p_noncat)), Sigma = sigma)
+  x = matrix(0, n, l_cat+p_noncat)
+  for (i in 1:l){
+    index = cat_index_list[[i]]
+    x[,i] = apply(z[,index], 1, which.max)
+  }
+  if (p_ord>0){
+    for (j in 1:p_ord) x[,l_cat+j] = continuous2ordinal(z[,p_cat+j], k=ord_num)
+    if (p_ord < p_noncat) for (j in (p_ord+1):p_noncat) x[,l_cat+j] = trans_cont(z[,p_cat+j])
+  }else{
+    x[,-(1:l_cat)] = trans_cont(z[,-(1:p_cat)])
+  }
+  #if (mask_fraction>0) xmask = mask_MCAR(x, mask_fraction) else xmask = x
+  #df = as.data.frame(xmask)
+  #for (i in 1:l) df[,i] = as.factor(df[,i])
+  #xmask_cat = xmask[,1:l,drop=FALSE]
+  #zmask_noncat = xmask[,-(1:l),drop=FALSE]
+  # 'xmask'=xmask, 'df_xmask'=df,'xmask_cat'=xmask_cat,'zmask_noncat'=zmask_noncat,
+  list('x'=x,
+       'sigma'=sigma, 'mu_cat'=mu_cat, 'z'=z,
+       'cat_index_list'=cat_index_list,
+       'cat_index'=1:l_cat
+  )
+}
+
+gen_nominal_copula_old <- function(n, p_cat_vec, p_noncat, mask_fraction=0, mu_scale = 0.5, seed=NULL,
+                                   mu_cat = NULL, sigma=NULL){
+  if (!is.null(seed)) set.seed(seed)
+  l = length(p_cat_vec)
+  cat_index_list = vector('list', l)
+  last = 0
+  for (i in 1:l){
+    cat_index_list[[i]] = last + (1:p_cat_vec[i])
+    last = last + length(cat_index_list[[i]])
+  }
+  p_cat = sum(p_cat_vec)
+  l_cat = length(p_cat_vec)
+  p = p_cat + p_noncat
+  #
+  if (is.null(mu_cat)) mu_cat = rnorm(p_cat)*0.5
+  if (is.null(sigma)) sigma = gen_nominal_copula_corr(p_cat_vec, p_noncat)
+  z = MASS::mvrnorm(n = n, mu = c(mu_cat, rep(0, p_noncat)), Sigma = sigma)
+  x = matrix(0, n, l_cat+p_noncat)
+  for (i in 1:l){
+    index = cat_index_list[[i]]
+    zuse = cbind(matrix(0,n,1), z[,index])
+    x[,i] = apply(zuse, 1, which.max)
+  }
+  x[,-(1:l_cat)] = z[,-(1:p_cat)]
+  if (mask_fraction>0) xmask = mask_MCAR(x, mask_fraction) else xmask = x
+  df = as.data.frame(xmask)
+  for (i in 1:l) df[,i] = as.factor(df[,i])
+
+  xmask_cat = xmask[,1:l,drop=FALSE]
+  zmask_noncat = xmask[,-(1:l),drop=FALSE]
+  list('x'=x, 'xmask'=xmask, 'df_xmask'=df,
+       'xmask_cat'=xmask_cat,
+       'zmask_noncat'=zmask_noncat,
+       'sigma'=sigma, 'mu_cat'=mu_cat, 'z'=z,
+       'cat_index_list'=cat_index_list,
+       'cat_index'=1:l_cat
+  )
+}
+

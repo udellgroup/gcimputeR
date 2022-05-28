@@ -4,7 +4,7 @@
 \alias{get_cat_bounds}
 \title{Get the lower and upper bounds for truncated normal moments calculation at categorical columns}
 \usage{
-get_cat_bounds(X_cat, mu, cat_index_list, check = FALSE)
+get_cat_bounds(X_cat, mu, cat_index_list, check = FALSE, old = FALSE)
 }
 \arguments{
 \item{X_cat}{(incomplete) categorical data matrix}

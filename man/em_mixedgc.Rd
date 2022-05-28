@@ -9,6 +9,7 @@ em_mixedgc(
   Lower,
   Upper,
   d_index,
+  dcat_index = NULL,
   cat_input = NULL,
   start = NULL,
   trunc_method = "Iterative",
@@ -18,6 +19,7 @@ em_mixedgc(
   eps = 0.01,
   verbose = FALSE,
   runiter = 0,
+  corr_min_eigen = 0.01,
   scale_to_corr = TRUE
 )
 }
@@ -32,7 +34,7 @@ em_mixedgc(
 
 \item{cat_input}{Input for categorical dimensions}
 
-\item{start}{Initial value of copula correlation.}
+\item{start}{Initial value of copula correlation}
 
 \item{trunc_method}{Method for evaluating truncated normal moments: \code{'Iterative'} or \code{'Sampling'}.}
 
@@ -47,6 +49,8 @@ em_mixedgc(
 \item{verbose}{Whether to print progress information}
 
 \item{runiter}{When set as a positive integer, the algorithm will run the specified number of iterations exactly.}
+
+\item{corr_min_eigen}{If the minimal eigenvalue of a correlation estimate is below \code{corr_min_eigen}, it will be regularized to have minimal eigenvalue equal to \code{corr_min_eigen}}
 
 \item{scale_to_corr}{Whether to scale a covariance into a correlation matrix in each EM iteration. For development purpose. Use with caution.}
 }

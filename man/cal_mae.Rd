@@ -13,7 +13,7 @@ cal_mae(xhat, xobs = NULL, xtrue, round = FALSE)
 
 \item{xtrue}{complete true data matrix or vector}
 
-\item{round}{whether round the values of \code{xhat} to integers}
+\item{round}{whether round the values of \code{xhat} to observed integers}
 }
 \value{
 computed error

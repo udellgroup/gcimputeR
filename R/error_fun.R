@@ -1,10 +1,11 @@
+
 #' compute the mean absolute error
 #'
 #' @description compute the mean absolute error on entries which are missing in \code{xobs} but observed in \code{xtrue}
 #' @param xhat imputed data matrix or vector
 #' @param xobs incomplete observed data matrix or vector
 #' @param xtrue complete true data matrix or vector
-#' @param round whether round the values of \code{xhat} to integers
+#' @param round whether round the values of \code{xhat} to observed integers
 #' @return computed error
 #' @export
 cal_mae = function(xhat, xobs=NULL, xtrue, round = FALSE){
@@ -41,25 +42,38 @@ cal_rmse = function(xhat, xobs=NULL, xtrue, relative = TRUE){
 #' @param xobs incomplete observed data matrix
 #' @param xtrue complete true data matrix
 #' @param round whether round the values of \code{xhat} to integers
+#' @param base_from_true If \code{TRUE}, form baseline imputation from \code{xtrue}. Else, form baseline imputation from \code{xobs}.
+#' @param verbose If \code{TRUE}, throw out a warning when perfect baseline imputation appears
 #' @return a vector with SMAE for each column
 #' @export
-cal_mae_scaled = function(xhat, xobs, xtrue, round = FALSE, reduce = TRUE){
+cal_mae_scaled = function(xhat, xobs, xtrue,
+                          round = FALSE, reduce = TRUE, base_from_true = FALSE, verbose = TRUE){
+  scale_off = FALSE
   n = dim(xtrue)[1]
   p = dim(xtrue)[2]
-  xobs = as.numeric(as.matrix(xobs))
-  dim(xobs) = c(n,p)
-  xhat = as.numeric(as.matrix(xhat))
-  dim(xhat) = c(n,p)
-  med = apply(xobs,2,median, na.rm=TRUE)
-  err.imp = numeric(p)
+  xobs = to_numeric_matrix(xobs)
+  xhat = to_numeric_matrix(xhat)
+  xtrue = to_numeric_matrix(xtrue)
+  if (base_from_true) xbase = xtrue else xbase = xobs
+  med = apply(xbase,2,median, na.rm=TRUE)
+  err = numeric(p)
 
   for (j in 1:p){
-    err.med = cal_mae(xhat = rep(med[j],n), xobs = xobs[,j], xtrue = xtrue[,j])
-    err.imp[j] = cal_mae(xhat = xhat[,j], xobs = xobs[,j], xtrue = xtrue[,j], round = round)/err.med
+    if (!scale_off){
+      if (round) medimp = to_nearest_ord(med[j], xobs[,j]) else medimp = med[j]
+      err_med = cal_mae(xhat = rep(medimp,n), xobs = xobs[,j], xtrue = xtrue[,j])
+    }else err_med = 1
+    if (round) ximp = to_nearest_ord_vec(xhat[,j], xobs[,j]) else ximp = xhat[,j]
+    err[j] = cal_mae(xhat = ximp, xobs = xobs[,j], xtrue = xtrue[,j])/err_med
   }
-  if (any(is.infinite(err.imp))) warning('Perfect median imputation appears')
-  if (reduce) err.imp = mean(err.imp)
-  err.imp
+  keep = is.finite(err)
+  remove = !keep
+  if (any(remove) & verbose){
+    #stop('Perfect median imputation appears')
+    warning(paste0('Perfect majority vote imputation appears in ', sum(remove), ' vars'))
+  }
+  if (reduce) err = mean(err[keep])
+  err
 }
 
 #' compute mis-classification rate for categorical data
@@ -70,9 +84,35 @@ cal_mae_scaled = function(xhat, xobs, xtrue, round = FALSE, reduce = TRUE){
 #' @param xtrue complete true data matrix
 #' @export
 cal_misclass = function(xhat, xobs, xtrue){
-  xhat = as.numeric(as.matrix(xhat))
   xobs = as.numeric(as.matrix(xobs))
+  xhat = as.numeric(as.matrix(xhat))
   xtrue = as.numeric(as.matrix(xtrue))
-  if (is.null(xobs)) loc = !is.na(xtrue) else loc = which(is.na(xobs) & (!is.na(xtrue)))
-  mean(xhat[loc] == xtrue[loc])
+  if (is.null(xobs)) loc = !is.na(xtrue) else loc = is.na(xobs) & (!is.na(xtrue))
+  1 - mean(xhat[loc] == xtrue[loc])
+}
+
+cal_misclass_scaled = function(xhat, xobs, xtrue, base_from_true = FALSE, reduce =TRUE){
+  xobs = to_numeric_matrix(xobs)
+  xhat = to_numeric_matrix(xhat)
+  xtrue = to_numeric_matrix(xtrue)
+
+  if (base_from_true) xbase = xtrue else xbase = xobs
+  base = apply(xbase, 2, function(x) names(which.max(table(x))))
+  base = as.integer(base)
+  p = ncol(xhat)
+  err = numeric(p)
+  n = nrow(xobs)
+
+  for (j in 1:p){
+    err_base = cal_misclass(xhat = rep(base[j],n), xobs = xobs[,j], xtrue = xtrue[,j])
+    err[j] = cal_misclass(xhat = xhat[,j], xobs = xobs[,j], xtrue = xtrue[,j])/err_base
+  }
+
+  remove = is.infinite(err)
+  if (any(remove)){
+    #stop('Perfect median imputation appears')
+    warning(paste0('Perfect majority vote imputation appears in ', sum(remove), ' vars'))
+  }
+  if (reduce) err = mean(err[!remove])
+  err
 }
