@@ -23,6 +23,8 @@ cal_mae_scaled(
 
 \item{round}{whether round the values of \code{xhat} to integers}
 
+\item{reduce}{Return the average error if \code{TRUE} else the whole error vector}
+
 \item{base_from_true}{If \code{TRUE}, form baseline imputation from \code{xtrue}. Else, form baseline imputation from \code{xobs}.}
 
 \item{verbose}{If \code{TRUE}, throw out a warning when perfect baseline imputation appears}

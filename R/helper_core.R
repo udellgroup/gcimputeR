@@ -5,7 +5,7 @@ sum_list_len <- function(s) sum(purrr::map_int(s, length))
 
 #' DataFrame to Matrix
 #'
-#' @description Safelly turn a data frame to a numerical matrix
+#' @description Safely turn a numerical data frame to a numerical matrix
 #' @param X a data frame
 #' @export
 to_numeric_matrix <- function(X){

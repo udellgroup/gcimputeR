@@ -8,6 +8,12 @@ Z_to_original_trunc(Z, X_cat, cat_index_list, old = FALSE)
 }
 \arguments{
 \item{Z}{Matrix corresponding to ONLY latent categorical variables}
+
+\item{X_cat}{(incomplete) categorical data matrix}
+
+\item{cat_index_list}{list indicating the number of levels for each categorical variable}
+
+\item{old}{Use previous stringent categorical model?}
 }
 \description{
 Transform latent matrix corresponding to latent categorical variables so that after transformation, interval truncated gaussian is achieved

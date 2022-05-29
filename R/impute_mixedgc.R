@@ -24,6 +24,7 @@ optim_params <- function(){
 #' @param n_update The number of updates, only used when \code{trunc_method} is \code{'Iterative'}
 #' @param n_sample Number of MC samples, only used when \code{trunc_method} is \code{'Sampling'}
 #' @param corr If not \code{NULL}, impute missing values using \code{corr} as the copula correlation
+#' @param n_MI The number of random samples to draw from the missing distribution.
 #' @param ... Additional arguments for development use
 #' @details Impute the missing entries of continuous and ordinal mixed data by fitting a Gaussian copula model to the data.
 #' @return A list containing:
@@ -50,7 +51,7 @@ optim_params <- function(){
 #'
 impute_mixedgc = function(X, nlevels = 20,
                           trunc_method = 'Iterative', n_sample=5000, n_update=1,
-                          maxit=50, eps=0.01, verbose=FALSE, runiter = 0,
+                          maxit=50, eps=0.01, verbose=FALSE, runiter = 0, n_MI=0,
                           corr = NULL,...){
   n = dim(X)[1]
   p = dim(X)[2]

@@ -30,6 +30,8 @@ latent_operation(
 
 \item{d_index}{Boolean vector with \code{TRUE} at ordinal dimensions}
 
+\item{dcat_index}{Boolean vector with \code{TRUE} at categorical dimensions}
+
 \item{cat_input}{Input for categorical dimensions}
 
 \item{corr}{Current copula correlation estimate}
@@ -39,6 +41,8 @@ latent_operation(
 \item{n_update}{The number of updates, only used when \code{trunc_method} is \code{'Iterative'}}
 
 \item{n_sample}{Number of MC samples, only used when \code{trunc_method} is \code{'Sampling'}}
+
+\item{n_MI}{The number of random samples to draw from the missing distribution.}
 }
 \value{
 A list containing

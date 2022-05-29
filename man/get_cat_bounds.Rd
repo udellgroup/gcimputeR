@@ -12,6 +12,10 @@ get_cat_bounds(X_cat, mu, cat_index_list, check = FALSE, old = FALSE)
 \item{mu}{mean vector for categorical}
 
 \item{cat_index_list}{list indicating the number of levels for each categorical variable}
+
+\item{check}{Sanity check on the output?}
+
+\item{old}{Use previous stringent categorical model?}
 }
 \value{
 Imputed data matrix

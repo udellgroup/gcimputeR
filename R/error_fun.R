@@ -42,6 +42,7 @@ cal_rmse = function(xhat, xobs=NULL, xtrue, relative = TRUE){
 #' @param xobs incomplete observed data matrix
 #' @param xtrue complete true data matrix
 #' @param round whether round the values of \code{xhat} to integers
+#' @param reduce Return the average error if \code{TRUE} else the whole error vector
 #' @param base_from_true If \code{TRUE}, form baseline imputation from \code{xtrue}. Else, form baseline imputation from \code{xobs}.
 #' @param verbose If \code{TRUE}, throw out a warning when perfect baseline imputation appears
 #' @return a vector with SMAE for each column

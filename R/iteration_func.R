@@ -4,6 +4,7 @@
 #' @param task Task to perform. One of \code{"em", "fillup", "sample"}.
 #' @param corr Current copula correlation estimate
 #' @inheritParams em_mixedgc
+#' @inheritParams impute_mixedgc
 #' @return A list containing
 #' \describe{
 #'   \item{\code{corr}}{Available when \code{task = 'em'}. Updated correlation estimate.}

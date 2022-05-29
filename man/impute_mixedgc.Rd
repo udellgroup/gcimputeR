@@ -14,6 +14,7 @@ impute_mixedgc(
   eps = 0.01,
   verbose = FALSE,
   runiter = 0,
+  n_MI = 0,
   corr = NULL,
   ...
 )
@@ -36,6 +37,8 @@ impute_mixedgc(
 \item{verbose}{Whether to print progress information}
 
 \item{runiter}{When set as a positive integer, the algorithm will run the specified number of iterations exactly.}
+
+\item{n_MI}{The number of random samples to draw from the missing distribution.}
 
 \item{corr}{If not \code{NULL}, impute missing values using \code{corr} as the copula correlation}
 

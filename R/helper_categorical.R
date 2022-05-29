@@ -134,6 +134,7 @@ project_to_nominal_corr_simple <- function(sigma, cat_index_list, eps = 1e-3){
 #'
 #' @description  Transform latent matrix corresponding to latent categorical variables so that after transformation, interval truncated gaussian is achieved
 #' @param Z Matrix corresponding to ONLY latent categorical variables
+#' @inheritParams get_cat_bounds
 Z_to_original_trunc <- function(Z, X_cat, cat_index_list, old = FALSE){
   n = nrow(Z)
   for (i in 1:n){

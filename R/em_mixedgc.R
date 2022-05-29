@@ -17,6 +17,7 @@ simple_imp <- function(Z, col_mean=FALSE, std=0){
 #' @inheritParams observed_to_latent
 #' @inheritParams impute_mixedgc
 #' @param corr_min_eigen  If the minimal eigenvalue of a correlation estimate is below \code{corr_min_eigen}, it will be regularized to have minimal eigenvalue equal to \code{corr_min_eigen}
+#' @param dcat_index Boolean vector with \code{TRUE} at categorical dimensions
 #' @param cat_input Input for categorical dimensions
 #' @param start Initial value of copula correlation
 #' @param scale_to_corr Whether to scale a covariance into a correlation matrix in each EM iteration. For development purpose. Use with caution.

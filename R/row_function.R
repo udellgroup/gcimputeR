@@ -309,6 +309,7 @@ update_z_row_ord <- function(z, lower, upper,
 #' @inheritParams update_z_row_ord
 #' @param sigma_oo \eqn{Sigma_{obs, obs}}
 #' @inheritParams latent_operation_row
+#' @param ord_indices Boolean vector where \code{TRUE} indicates ordinal entries.
 #' @return A list containing
 #' \describe{
 #'   \item{\code{mean}}{Mean for observed ordinal}

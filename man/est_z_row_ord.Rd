@@ -26,6 +26,8 @@ est_z_row_ord(
 
 \item{sigma_oo}{\eqn{Sigma_{obs, obs}}}
 
+\item{ord_indices}{Boolean vector where \code{TRUE} indicates ordinal entries.}
+
 \item{obs_indices}{Boolean vector where \code{TRUE} indicates observed entries.}
 
 \item{ord_obs_indices}{Boolean vector where \code{TRUE} indicates observed ordinal entries.}

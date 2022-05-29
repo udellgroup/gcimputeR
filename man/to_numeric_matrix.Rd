@@ -10,5 +10,5 @@ to_numeric_matrix(X)
 \item{X}{a data frame}
 }
 \description{
-Safelly turn a data frame to a numerical matrix
+Safely turn a numerical data frame to a numerical matrix
 }

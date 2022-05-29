@@ -193,6 +193,8 @@ latent_to_observed <- function(Zimp, X, mu, cat_labels, ord_in_noncat,
 #' @param X_cat (incomplete) categorical data matrix
 #' @param mu mean vector for categorical
 #' @param cat_index_list list indicating the number of levels for each categorical variable
+#' @param check Sanity check on the output?
+#' @param old Use previous stringent categorical model?
 #' @return Imputed data matrix
 get_cat_bounds <- function(X_cat, mu, cat_index_list, check=FALSE, old = FALSE){
   # TODO check values of X_cat

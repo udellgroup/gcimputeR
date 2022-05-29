@@ -32,6 +32,8 @@ em_mixedgc(
 
 \item{d_index}{Boolean vector with \code{TRUE} at ordinal dimensions}
 
+\item{dcat_index}{Boolean vector with \code{TRUE} at categorical dimensions}
+
 \item{cat_input}{Input for categorical dimensions}
 
 \item{start}{Initial value of copula correlation}
