@@ -168,6 +168,8 @@ observed_to_latent <- function(X, d_index, method='univariate_mean'){
   list(Z=Z, Lower=Z_ord_lower, Upper=Z_ord_upper)
 }
 
+
+
 latent_to_observed <- function(Zimp, X, mu, cat_labels, ord_in_noncat,
                                cat_index, cat_index_all, cat_index_list, old=FALSE){
   d_cat = length(cat_index_all)

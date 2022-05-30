@@ -15,7 +15,7 @@
 #'   \item{\code{C}}{Available when \code{task = 'em'}. The conditional co-variance due to missingness}
 #'   \item{\code{var_ordinal}}{Available when \code{task = 'em'} or \code{task = 'fillup'}. The conditional variance due to truncation, i.e. Var(z|a < z < b)}
 #' }
-
+#' @export
 latent_operation <- function(task,
                              Z, Lower, Upper,
                              d_index, dcat_index,
