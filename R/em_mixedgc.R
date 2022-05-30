@@ -28,6 +28,7 @@ simple_imp <- function(Z, col_mean=FALSE, std=0){
 #'   \item{\code{Z}}{Incomplete \code{Z} with approximated observed ordinal mean}
 #'   \item{\code{Zimp}}{Complete \code{Z} with observed entries the same as \code{Zobs} and missing entries imputed}
 #' }
+#' @export
 em_mixedgc = function(Z, Lower, Upper,
                       d_index, dcat_index=NULL,
                       cat_input = NULL,

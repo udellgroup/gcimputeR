@@ -7,6 +7,8 @@ initZ_noncat = function(Lower, Upper, X_cat,
   list(Zord = Zord, Zcat = Zcat)
 }
 
+
+
 initZ <- function(Lower, Upper, X,
                   cat_index, ord_in_noncat, cat_in_d, c_index, dord_index, dcat_index,
                   cat_index_list, Z_cont=NULL, m=1, method = 'univariate_mean', old = FALSE){
