@@ -1,3 +1,8 @@
+#' Compute categorical frequency
+#'
+#' @description  For a  categorical matrix, compute the empirical frequency for each variable
+#' @param X_cat An integer encoded categorical matrix
+#' @export
 get_cat_index_freq <- function(X_cat){
   p_cat = ncol(X_cat)
   freq = vector('list', p_cat)
