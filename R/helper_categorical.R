@@ -70,6 +70,8 @@ get_cat_slicing_index <- function(x_cat, cat_index_list, keep = 'observed', d_ca
   list('incat'=index_incat, 'cat'=index_cat)
 }
 
+
+
 create_cat_index_list <- function(cat_index_level){
   cat_index_list = list()
   start = 1

@@ -143,8 +143,21 @@ solve_nominal_mu <- function(prob, beta = 1000, n_MC = 10000, seed = 101, inits 
   best_r
 }
 
-get_cat_mu <- function(freq_list, beta = 1000, n_MC = 5000, seed = 101, inits = NULL, eps = 1e-4,
-                       quiet_solve=TRUE, verbose = FALSE, old = FALSE){
+#' Categorical marginal estimation
+#'
+#' @description  Fit the mean of Gaussian-Max distribution for given frequency
+#' @param freq_list A list of category frequency
+#' @param beta Constant in softmax computation
+#' @param n_MC Number of samples used to approximate the expectation of softmax
+#' @param seed random seed
+#' @param eps The largest accepted marginal estimation error
+#' @param verbose Whether to print progress information
+#' @param old Use previous formulation?
+#' @export
+get_cat_mu <- function(freq_list, beta = 1000, n_MC = 5000, seed = 101,  eps = 1e-4,
+                       verbose = FALSE, old = FALSE){
+  inits = NULL
+  quiet_solve=TRUE
   if (verbose) print('Starting categorical marginal estimation: ')
   d = sum_list_len(freq_list)
   lf = length(freq_list)
