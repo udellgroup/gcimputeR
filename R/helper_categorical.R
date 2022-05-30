@@ -84,7 +84,13 @@ create_cat_index_list <- function(cat_index_level){
 }
 
 
-
+#' Copula correlation projection
+#'
+#' @description Project a copula correlation matrix to be the identity at each categorical block
+#' @param sigma copula  correlation
+#' @param eps minimal allowed eigenvalue
+#' @inheritParams  get_cat_bounds
+#' @export
 project_to_nominal_corr <- function(sigma, cat_index_list, eps=1e-5){
   p = ncol(sigma)
   A = diag(nrow = p, ncol = p)
