@@ -51,6 +51,14 @@ mask_MCAR_vec <- function(X, mask_fraction, seed=NULL){
   X_masked
 }
 
+#' Split observation into training  and validation
+#'
+#' @description Split observation into training  and validation
+#' @param X Original data
+#' @param X_mask Masked data
+#' @param val_ratio The ratio of validation to training entries
+#' @param seed Seed for mask
+#' @export
 # val_ratio is the ratio of validation to training
 split_mask_val_test <- function(X_mask, X, val_ratio = 0.5, seed = NULL){
   if (!is.null(seed)) set.seed(seed)
