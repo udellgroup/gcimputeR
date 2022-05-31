@@ -19,3 +19,4 @@ The imputed complete \code{Z} matrix
 \description{
 Using the returned quantities from EM algorithm, impute missing entries for the Z matrix
 }
+\keyword{internal}

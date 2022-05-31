@@ -8,6 +8,7 @@ sum_list_len <- function(s) sum(purrr::map_int(s, length))
 #' @description Safely turn a numerical data frame to a numerical matrix
 #' @param X a data frame
 #' @export
+#' @keywords internal
 to_numeric_matrix <- function(X){
   Xnew = as.numeric(as.matrix(X))
   dim(Xnew) = dim(X)
@@ -58,6 +59,7 @@ to_nearest_ord_vec <- function(x, xobs){
 #' @param r_upper Upper boundary of truncated intervals for ordinal columns
 #' @return A complte Z matrix
 #' @export
+#' @keywords internal
 impute_init = function(Z_meanimp, rank, r_lower, r_upper){
   obj = svd(Z_meanimp, nv=rank)
   Z = obj$u[,1:rank] %*% diag(obj$d[1:rank]) %*% t(obj$v)
@@ -81,6 +83,7 @@ impute_init = function(Z_meanimp, rank, r_lower, r_upper){
 #'   \item{\code{sigma}}{Adjusted noise variance}
 #' }
 #' @export
+#' @keywords internal
 scale_corr = function(W, sigma){
   p = dim(W)[1]
   tr = apply(W, 1, function(x){sum(x^2)})
@@ -107,6 +110,7 @@ sum_3d_scale = function(M, c, index){
 #' @param c A vector of length n
 #' @param index a subset of \{1,2,...,n\}
 #' @return A k*1 matrix
+#' @keywords internal
 sum_2d_scale = function(M, c, index){
   v = apply(M, 2, function(x){sum(x[index] * c[index])})
   matrix(v,ncol = 1)
@@ -119,6 +123,7 @@ sum_2d_scale = function(M, c, index){
 #' @param A A p*p matrix
 #' @return A scalar
 #' @export
+#' @keywords internal
 quad = function(A,x){
   as.numeric(t(x) %*% A %*% x)
 }
@@ -131,6 +136,7 @@ quad = function(A,x){
 #' @param W The returned estimate for \code{W} matrix
 #' @return The imputed complete \code{Z} matrix
 #' @export
+#' @keywords internal
 imputeZ_mixedgc_ppca = function(Z, W, S){
   n = dim(Z)[1]
   p = dim(Z)[2]
@@ -160,6 +166,7 @@ imputeZ_mixedgc_ppca = function(Z, W, S){
 #'   \item{\code{mean}}{conditional mean}
 #'   \item{\code{cov}}{conditional covariance }
 #' }
+#' @keywords internal
 get_cond_dist <- function(z, mu, cov, index_o, index_m=NULL,drop=TRUE){
   test_logical = TRUE
   if (test_logical){

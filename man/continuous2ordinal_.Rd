@@ -23,3 +23,4 @@ an ordinal vector.
 \description{
 Discretize continuous x to ordinal z with \code{k} levels.
 }
+\keyword{internal}

@@ -7,6 +7,7 @@
 #' @param qmin Cutoff points are slected in the range of `qmin` and `qmax` quantiles of the data `x`
 #' @param qmax See `qmin`.
 #' @return an ordinal vector.
+#' @keywords internal
 continuous2ordinal_ = function(x, k = 2, by = 'dist', qmin = 0.1, qmax = 0.9){
   std_dev = sd(x, na.rm = TRUE)
   if (by == 'dist'){

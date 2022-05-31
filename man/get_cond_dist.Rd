@@ -29,3 +29,4 @@ A list containing
 \description{
 Compute the conditional normal mean and cov
 }
+\keyword{internal}

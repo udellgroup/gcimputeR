@@ -1,7 +1,7 @@
 Package: gcimputeR
 Type: Package
 Title: Missing value imputation for mixed data through Gaussian copula
-Version: 0.1.0
+Version: 0.1.1
 Author: Yuxuan Zhao, Madeleine Udell
 Maintainer: Yuxuan Zhao <yz2295@cornell.edu>
 Description: This package aims to impute missing values for continuous and ordinal (including binary) mixed data. A Gaussian copula model will be first fitted using the incomplete data, then the fitted model is used to impute the missing values.

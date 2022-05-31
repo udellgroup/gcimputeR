@@ -17,3 +17,4 @@ A scalar
 \description{
 Compute the quadratic form x^tAx
 }
+\keyword{internal}

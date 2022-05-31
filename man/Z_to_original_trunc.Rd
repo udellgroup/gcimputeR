@@ -18,3 +18,4 @@ Z_to_original_trunc(Z, X_cat, cat_index_list, old = FALSE)
 \description{
 Transform latent matrix corresponding to latent categorical variables so that after transformation, interval truncated gaussian is achieved
 }
+\keyword{internal}

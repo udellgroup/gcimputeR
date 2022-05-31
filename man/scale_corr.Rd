@@ -21,3 +21,4 @@ A list containing
 \description{
 adjust estiamted correlation parameters, W and sigma, to satisfy unit diagonal constraints.
 }
+\keyword{internal}

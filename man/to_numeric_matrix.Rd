@@ -12,3 +12,4 @@ to_numeric_matrix(X)
 \description{
 Safely turn a numerical data frame to a numerical matrix
 }
+\keyword{internal}

@@ -19,3 +19,4 @@ A k*1 matrix
 \description{
 For a 2d matrix M with dimension n*k, sum over dimension 2 with scale c, at entries selected by index in dimension 1
 }
+\keyword{internal}
