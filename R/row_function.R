@@ -15,6 +15,7 @@
 #'   \item{\code{C}}{Available when \code{task = 'em'}. The conditional co-variance due to missingness}
 #'   \item{\code{var_ordinal}}{Available when \code{task = 'em'} or \code{task = 'fillup'}. The conditional variance due to truncation, i.e. Var(z|a < z < b)}
 #' }
+#' @keywords internal
 latent_operation_row <- function(task,
                                  z, lower, upper,
                                  d_index, dcat_index,
@@ -224,9 +225,9 @@ latent_operation_row <- function(task,
 "
 
 
-#' Compute multivariate truncated normal mean and var
+#' Compute the observed ordinal mean and var in a row
 #'
-#' @description  iteratively compute the conditional mean and var at observed ordinal entries
+#' @description  Iteratively update an estimate of the conditional mean and var at observed ordinal entries
 #' @inheritParams latent_operation_row
 #' @param obs_indices Boolean vector where \code{TRUE} indicates observed entries.
 #' @param ord_obs_indices Boolean vector where \code{TRUE} indicates observed ordinal entries.
@@ -240,6 +241,7 @@ latent_operation_row <- function(task,
 #'   \item{\code{var}}{Var for observed ordinal}
 #' }
 #' @export
+#' @keywords internal
 update_z_row_ord <- function(z, lower, upper,
                              obs_indices,
                              ord_obs_indices, ord_in_obs, obs_in_ord,
@@ -303,9 +305,10 @@ update_z_row_ord <- function(z, lower, upper,
   list('mean'=z, 'var'=var_ordinal)
 }
 
-#' Compute multivariate truncated normal mean and covariance
+
+#' Compute the observed ordinal mean and cov in a row
 #'
-#' @description  compute multivariate truncated normal mean and covariance by sampling
+#' @description  Estimate the conditional mean and cov at observed ordinal entries through sampling
 #' @inheritParams update_z_row_ord
 #' @param sigma_oo \eqn{Sigma_{obs, obs}}
 #' @inheritParams latent_operation_row
@@ -316,6 +319,7 @@ update_z_row_ord <- function(z, lower, upper,
 #'   \item{\code{cov}}{Cov for observed ordinal}
 #' }
 #' @export
+#' @keywords internal
 est_z_row_ord <- function(z, lower, upper, sigma_oo,
                           ord_indices = NULL, obs_indices = NULL,
                           ord_obs_indices  = NULL, obs_in_ord = NULL, ord_in_obs = NULL,
@@ -394,7 +398,7 @@ est_z_row_ord <- function(z, lower, upper, sigma_oo,
 #'   \item{\code{mean}}{Mean for observed ordinal}
 #'   \item{\code{cov}}{Cov for observed ordinal}
 #' }
-#' @export
+#' @keywords internal
 est_z_row_ord_nocont <- function(lower, upper, corr=NULL,
                                  obs_indices = NULL,
                                  cat_input = NULL,

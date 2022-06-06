@@ -3,6 +3,7 @@
 #' @description  For a  categorical matrix, compute the empirical frequency for each variable
 #' @param X_cat An integer encoded categorical matrix
 #' @export
+#' @keywords internal
 get_cat_index_freq <- function(X_cat){
   p_cat = ncol(X_cat)
   freq = vector('list', p_cat)
@@ -154,6 +155,7 @@ solve_nominal_mu <- function(prob, beta = 1000, n_MC = 10000, seed = 101, inits 
 #' @param verbose Whether to print progress information
 #' @param old Use previous formulation?
 #' @export
+#' @keywords internal
 get_cat_mu <- function(freq_list, beta = 1000, n_MC = 5000, seed = 101,  eps = 1e-4,
                        verbose = FALSE, old = FALSE){
   inits = NULL

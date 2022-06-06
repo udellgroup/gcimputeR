@@ -22,3 +22,4 @@ A list containing
 \description{
 For continuous \code{X}, compute its corresonding latent value \code{Z}; For ordinal \code{X}, compute its corresponding truncated interval on latent value \code{Z}.
 }
+\keyword{internal}

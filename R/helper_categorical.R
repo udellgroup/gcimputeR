@@ -24,7 +24,7 @@ nominal_z_to_x_col <- function(z, old = FALSE){
 #'   \item{\code{x}}{Integer encoded \code{x}}
 #'   \item{\code{xlevels}}{Original category names corresponding to 1,2,...,k.}
 #' }
-#' @export
+#' @keywords internal
 cat_to_integers <- function(x){
   x = droplevels(as.factor(x))
   xlevels = levels(x)
@@ -93,6 +93,7 @@ create_cat_index_list <- function(cat_index_level){
 #' @param eps minimal allowed eigenvalue
 #' @inheritParams  get_cat_bounds
 #' @export
+#' @keywords internal
 project_to_nominal_corr <- function(sigma, cat_index_list, eps=1e-5){
   p = ncol(sigma)
   A = diag(nrow = p, ncol = p)

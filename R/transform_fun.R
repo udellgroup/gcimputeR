@@ -10,6 +10,7 @@
 #'   \item{\code{Upper}}{Available when \code{type=ordinal}. Upper boundary of corresponding truncated interval}
 #' }
 #' @export
+#' @keywords internal
 range_transform = function(X, type){
   n = dim(X)[1]
   p = dim(X)[2]
@@ -57,6 +58,7 @@ range_transform = function(X, type){
 #' @param d_index ordinal dimension indexes.
 #' @return Imputed data matrix
 #' @export
+#' @keywords internal
 Ximp_transform = function(Z, X, d_index){
   # for continuous, use default empirical quantile
   n = dim(Z)[1]
@@ -144,6 +146,7 @@ Ximp_transform_cat <- function(Z_cat, X_cat, cat_index_list, old = FALSE){
 #'   \item{\code{Lower}}{Lower boundary for ordinal dimensions. \code{NA} at missing locations.}
 #'   \item{\code{Upper}}{Upper boundary for ordinal dimensions. \code{NA} at missing locations.}
 #' }
+#' @keywords internal
 observed_to_latent <- function(X, d_index, method='univariate_mean'){
   c_index = !d_index
   Z = matrix(NA, nrow(X), ncol(X))
@@ -197,6 +200,7 @@ latent_to_observed <- function(Zimp, X, mu, cat_labels, ord_in_noncat,
 #' @param check Sanity check on the output?
 #' @param old Use previous stringent categorical model?
 #' @return Imputed data matrix
+#' @keywords internal
 get_cat_bounds <- function(X_cat, mu, cat_index_list, check=FALSE, old = FALSE){
   # TODO check values of X_cat
   if (old) return(get_cat_bounds_old(X_cat, mu, cat_index_list, check))

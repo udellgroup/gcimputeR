@@ -21,3 +21,4 @@ Matrix \code{Z} with the same shape as \code{lower}
 \description{
 Each observed ordinal entry of \code{Z} follows truncated normal distribution with mean 0, variance 1 and truncated interval provided in \code{lower} and \code{upper}. Fill out those entries by their univariate mean if \code{method = "univariate_mean"} and by random sampples if \code{method = "sampling"}
 }
+\keyword{internal}

@@ -34,6 +34,7 @@ continuous2ordinal_ = function(x, k = 2, by = 'dist', qmin = 0.1, qmax = 0.9){
 #' @param max_try The maximum number of attempts to select random cutoffs, since some may yield to ordinal variable with fewer than \code{k} levels
 #' @return an ordinal vector.
 #' @export
+#' @keywords internal
 continuous2ordinal <- function(x, k = 2, by = 'dist', qmin = 0.1, qmax = 0.9, max_try=20){
   success = FALSE
   for (i in 1:max_try){

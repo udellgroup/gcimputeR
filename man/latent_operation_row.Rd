@@ -58,3 +58,4 @@ A list containing
 \description{
 operation for each latent row
 }
+\keyword{internal}

@@ -19,3 +19,4 @@ A list containing
 \description{
 For a category variable with k categories, rename the category names to 1,2,...,k in the order of appearance.
 }
+\keyword{internal}

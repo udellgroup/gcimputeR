@@ -68,3 +68,4 @@ A list containing fitted copula correlation matrix, the likelihood(objective fun
 \description{
 fit the Gaussian copula model from incomplete mixed data
 }
+\keyword{internal}

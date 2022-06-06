@@ -29,3 +29,4 @@ A list containing
 \description{
 Compute the mean and variance of one dimensional truncated normal random variable
 }
+\keyword{internal}

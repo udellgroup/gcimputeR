@@ -16,6 +16,7 @@
 #'   \item{\code{var_ordinal}}{Available when \code{task = 'em'} or \code{task = 'fillup'}. The conditional variance due to truncation, i.e. Var(z|a < z < b)}
 #' }
 #' @export
+#' @keywords internal
 latent_operation <- function(task,
                              Z, Lower, Upper,
                              d_index, dcat_index,
@@ -108,6 +109,7 @@ latent_operation <- function(task,
 #' @author Yuxuan Zhao, \email{yz2295@cornell.edu} and Madeleine Udell, \email{udell@cornell.edu}
 #' @references Zhao, Y., & Udell, M. (2020). Matrix Completion with Quantified Uncertainty through Low Rank Gaussian Copula. arXiv preprint arXiv:2006.10829.
 #' @export
+#' @keywords internal
 em_mixedgc_ppca_iter = function(Z, Z_lower, Z_upper, W, sigma){
   # input: "Z" matrix with missing values
   n = dim(Z)[1]

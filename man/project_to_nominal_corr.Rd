@@ -16,3 +16,4 @@ project_to_nominal_corr(sigma, cat_index_list, eps = 1e-05)
 \description{
 Project a copula correlation matrix to be the identity at each categorical block
 }
+\keyword{internal}

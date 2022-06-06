@@ -27,3 +27,4 @@ A list containing
 \description{
 compute multivariate truncated normal mean and cov by sampling
 }
+\keyword{internal}

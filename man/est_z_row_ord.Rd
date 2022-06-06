@@ -2,7 +2,7 @@
 % Please edit documentation in R/row_function.R
 \name{est_z_row_ord}
 \alias{est_z_row_ord}
-\title{Compute multivariate truncated normal mean and covariance}
+\title{Compute the observed ordinal mean and cov in a row}
 \usage{
 est_z_row_ord(
   z,
@@ -46,5 +46,6 @@ A list containing
 }
 }
 \description{
-compute multivariate truncated normal mean and covariance by sampling
+Estimate the conditional mean and cov at observed ordinal entries through sampling
 }
+\keyword{internal}

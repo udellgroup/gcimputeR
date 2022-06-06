@@ -99,6 +99,7 @@ scale_corr = function(W, sigma){
 #' @param c A vector of length n
 #' @param index a subset of \{1,2,...,n\}
 #' @return A k*k matrix
+#' @keywords internal
 sum_3d_scale = function(M, c, index){
   apply(M, c(2,3), function(x){sum(x[index] * c[index])})
 }

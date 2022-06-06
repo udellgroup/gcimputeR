@@ -23,3 +23,4 @@ Imputed data matrix
 \description{
 Impute orginal incomplete observation using imputed \code{Z} matrix and marginal distribution information drawn from original observation \code{X}
 }
+\keyword{internal}

@@ -29,6 +29,7 @@ simple_imp <- function(Z, col_mean=FALSE, std=0){
 #'   \item{\code{Zimp}}{Complete \code{Z} with observed entries the same as \code{Zobs} and missing entries imputed}
 #' }
 #' @export
+#' @keywords internal
 em_mixedgc = function(Z, Lower, Upper,
                       d_index, dcat_index=NULL,
                       cat_input = NULL,
@@ -130,6 +131,7 @@ em_mixedgc = function(Z, Lower, Upper,
 #' @author Yuxuan Zhao, \email{yz2295@cornell.edu} and Madeleine Udell, \email{udell@cornell.edu}
 #' @references Zhao, Y., & Udell, M. (2020). Matrix Completion with Quantified Uncertainty through Low Rank Gaussian Copula. arXiv preprint arXiv:2006.10829.
 #' @export
+#' @keywords internal
 em_mixedgc_ppca = function(rank, Z_continuous, r_lower, r_upper,
                            start =NULL, maxit=100, eps=0.01, verbose = FALSE){
   if (is.null(Z_continuous)){

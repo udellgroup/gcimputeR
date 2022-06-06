@@ -12,3 +12,4 @@ get_cat_index_freq(X_cat)
 \description{
 For a  categorical matrix, compute the empirical frequency for each variable
 }
+\keyword{internal}

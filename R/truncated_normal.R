@@ -12,6 +12,7 @@
 #'   \item{\code{var}}{The truncated normal varaince or `NULL` }
 #' }
 #' @export
+#' @keywords internal
 moments_truncnorm <- function(mu, std, a, b, tol=1e-6, mean_only=FALSE){
   alpha = (a-mu)/std
   beta = (b-mu)/std
@@ -54,6 +55,7 @@ moments_truncnorm <- function(mu, std, a, b, tol=1e-6, mean_only=FALSE){
 #'   \item{\code{var}}{The truncated normal varaince with the same length of `mu` or `NULL` }
 #' }
 #' @export
+#' @keywords internal
 moments_truncnorm_vec <- function(mu, std, a, b, tol=1e-6, mean_only=FALSE){
   alpha = (a-mu)/std
   beta = (b-mu)/std
@@ -129,6 +131,7 @@ moments_truncnorm_vec <- function(mu, std, a, b, tol=1e-6, mean_only=FALSE){
 #'   \item{\code{cov}}{Covariance matrix}
 #' }
 #' @export
+#' @keywords internal
 get_trunc_2dmoments <- function(mean, cov, lower, upper, n_sample=5000){
   p = length(mean)
   if (p==1){

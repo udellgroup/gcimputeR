@@ -36,3 +36,4 @@ A list containing
 \description{
 A wrapper for \code{est_z_row_ord()} where there is no continuous dimension
 }
+\keyword{internal}

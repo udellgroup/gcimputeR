@@ -2,7 +2,7 @@
 % Please edit documentation in R/row_function.R
 \name{update_z_row_ord}
 \alias{update_z_row_ord}
-\title{Compute multivariate truncated normal mean and var}
+\title{Compute the observed ordinal mean and var in a row}
 \usage{
 update_z_row_ord(
   z,
@@ -46,5 +46,6 @@ A list containing
 }
 }
 \description{
-iteratively compute the conditional mean and var at observed ordinal entries
+Iteratively update an estimate of the conditional mean and var at observed ordinal entries
 }
+\keyword{internal}

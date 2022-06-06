@@ -32,3 +32,4 @@ get_cat_mu(
 \description{
 Fit the mean of Gaussian-Max distribution for given frequency
 }
+\keyword{internal}

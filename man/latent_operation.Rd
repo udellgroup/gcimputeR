@@ -59,3 +59,4 @@ A list containing
 \description{
 Conduct one of three tasks in the latent space. If \code{task = "em"}, conduct an em iteration. If \code{task = "fillup"}, impute the missing entries of \code{Z} as their conditional mean. If \code{task = "sample"}, conduct multiple imputation on the missing entries of \code{Z}.
 }
+\keyword{internal}

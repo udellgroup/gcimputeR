@@ -24,3 +24,4 @@ A list containing
 \description{
 Given data matrix \code{X}, prepare the latent matrix \code{Z} and the value bounds for the ordinal dimensions
 }
+\keyword{internal}

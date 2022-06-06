@@ -25,3 +25,4 @@ an ordinal vector.
 \description{
 Discretize continuous x to ordinal z with \code{k} levels. If the generated values are guaranteed to have \code{k} unique levels, otherwise, error will be raised.
 }
+\keyword{internal}

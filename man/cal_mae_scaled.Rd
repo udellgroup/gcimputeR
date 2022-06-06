@@ -2,36 +2,11 @@
 % Please edit documentation in R/error_fun.R
 \name{cal_mae_scaled}
 \alias{cal_mae_scaled}
-\title{compute the scaled mean squared error(SMAE) scaled by the MAE of column}
+\title{Wrapper for cal_smae}
 \usage{
-cal_mae_scaled(
-  xhat,
-  xobs,
-  xtrue,
-  round = FALSE,
-  reduce = TRUE,
-  base_from_true = FALSE,
-  verbose = TRUE
-)
-}
-\arguments{
-\item{xhat}{complete imputed data matrix}
-
-\item{xobs}{incomplete observed data matrix}
-
-\item{xtrue}{complete true data matrix}
-
-\item{round}{whether round the values of \code{xhat} to integers}
-
-\item{reduce}{Return the average error if \code{TRUE} else the whole error vector}
-
-\item{base_from_true}{If \code{TRUE}, form baseline imputation from \code{xtrue}. Else, form baseline imputation from \code{xobs}.}
-
-\item{verbose}{If \code{TRUE}, throw out a warning when perfect baseline imputation appears}
-}
-\value{
-a vector with SMAE for each column
+cal_mae_scaled(...)
 }
 \description{
-For each column, compute the MAE of imputed value divided by the MAE of column median imputation
+Wrapper for cal_smae
 }
+\keyword{internal}

@@ -1,54 +1,53 @@
-
-#' compute the mean absolute error
+#' Compute imputation error
 #'
-#' @description compute the mean absolute error on entries which are missing in \code{xobs} but observed in \code{xtrue}
+#' @description Compute the imputation error on entries which are missing in \code{xobs} but observed in \code{xtrue}
 #' @param xhat imputed data matrix or vector
 #' @param xobs incomplete observed data matrix or vector
 #' @param xtrue complete true data matrix or vector
-#' @param round whether round the values of \code{xhat} to observed integers
-#' @return computed error
+#' @param round whether to round the values of \code{xhat} to observed integers in \code{xobs}
+#' @param relative Only used for \code{cal_rmse}. If \code{TRUE}, normalize the computed error by the Frobenius norm of \code{xtrue}
+#' @param reduce Only used for \code{cal_smae}. Return the average error if \code{TRUE} else the whole error vector
+#' @param verbose Only used for \code{cal_smae}. If \code{TRUE}, throw out a warning when perfect baseline imputation appears
+#' @return Computed imputation error
+#' @name comp_error
+NULL
+#> NULL
+
+#' @describeIn comp_error Compute the mean absolute error
 #' @export
-cal_mae = function(xhat, xobs=NULL, xtrue, round = FALSE){
+cal_mae = function(xhat, xobs, xtrue, round = FALSE){
   xhat = as.numeric(as.matrix(xhat))
   xobs = as.numeric(as.matrix(xobs))
   xtrue = as.numeric(as.matrix(xtrue))
   if(round) xhat = round(xhat)
-  if (is.null(xobs)) loc = !is.na(xtrue) else loc = which(is.na(xobs) & (!is.na(xtrue)))
+  #if (is.null(xobs)) loc = !is.na(xtrue) else loc = which(is.na(xobs) & (!is.na(xtrue)))
+  loc = which(is.na(xobs) & (!is.na(xtrue)))
   mean(abs(xhat[loc] - xtrue[loc]))
 }
 
-#' compute the root mean squared error
-#'
-#' @description compute the root mean squared error on entries which are missing in \code{xobs} but observed in \code{xtrue}
-#' @param xhat imputed data matrix or vector
-#' @param xobs incomplete observed data matrix or vector
-#' @param xtrue complete true data matrix or vector
-#' @param relative whether divide the computed error by the Frobenius norm of \code{xtrue}
-#' @return computed error
+#' @describeIn comp_error Compute the root mean squared error
 #' @export
-cal_rmse = function(xhat, xobs=NULL, xtrue, relative = TRUE){
+cal_rmse = function(xhat, xobs, xtrue, relative = TRUE){
   xhat = as.numeric(as.matrix(xhat))
   xobs = as.numeric(as.matrix(xobs))
   xtrue = as.numeric(as.matrix(xtrue))
-  if (is.null(xobs)) loc = !is.na(xtrue) else loc = which(is.na(xobs) & (!is.na(xtrue)))
+  #if (is.null(xobs)) loc = !is.na(xtrue) else loc = which(is.na(xobs) & (!is.na(xtrue)))
+  loc = which(is.na(xobs) & (!is.na(xtrue)))
   if (relative) scale = sqrt(mean((xtrue[loc])^2)) else scale = 1
   sqrt(mean((xhat[loc] - xtrue[loc])^2)) / scale
 }
 
-#' compute the scaled mean squared error(SMAE) scaled by the MAE of column
-#'
-#' @description For each column, compute the MAE of imputed value divided by the MAE of column median imputation
-#' @param xhat complete imputed data matrix
-#' @param xobs incomplete observed data matrix
-#' @param xtrue complete true data matrix
-#' @param round whether round the values of \code{xhat} to integers
-#' @param reduce Return the average error if \code{TRUE} else the whole error vector
-#' @param base_from_true If \code{TRUE}, form baseline imputation from \code{xtrue}. Else, form baseline imputation from \code{xobs}.
-#' @param verbose If \code{TRUE}, throw out a warning when perfect baseline imputation appears
-#' @return a vector with SMAE for each column
+#' Wrapper for cal_smae
 #' @export
-cal_mae_scaled = function(xhat, xobs, xtrue,
-                          round = FALSE, reduce = TRUE, base_from_true = FALSE, verbose = TRUE){
+#' @keywords internal
+cal_mae_scaled = function(...) cal_smae(...)
+
+#' @describeIn comp_error Compute the MAE scaled by median imputation MAE (at each column)
+#' @export
+cal_smae = function(xhat, xobs, xtrue,
+                          round = FALSE, reduce = TRUE, verbose = TRUE){
+  # If \code{TRUE}, form baseline imputation from \code{xtrue}. Else, form baseline imputation from \code{xobs}.
+  base_from_true = FALSE
   scale_off = FALSE
   n = dim(xtrue)[1]
   p = dim(xtrue)[2]
@@ -77,12 +76,7 @@ cal_mae_scaled = function(xhat, xobs, xtrue,
   err
 }
 
-#' compute mis-classification rate for categorical data
-#'
-#' @description compute mis-classification rate for categorical data
-#' @param xhat complete imputed data matrix
-#' @param xobs incomplete observed data matrix
-#' @param xtrue complete true data matrix
+#' @describeIn comp_error Compute the mis-classification rate for categorical data
 #' @export
 cal_misclass = function(xhat, xobs, xtrue){
   xobs = as.numeric(as.matrix(xobs))

@@ -55,6 +55,7 @@ initZ <- function(Lower, Upper, X,
 #' @param method method for initializing the mean
 #' @return Matrix \code{Z} with the same shape as \code{lower}
 #' @export
+#' @keywords internal
 initZ_interval_truncated = function(Lower, Upper, seed = NULL, method = 'univariate_mean'){
   if (!is.null(seed)) set.seed(seed)
   # input: truncated interval, mean and variance
