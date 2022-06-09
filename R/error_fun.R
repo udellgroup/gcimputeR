@@ -111,3 +111,16 @@ cal_misclass_scaled = function(xhat, xobs, xtrue, base_from_true = FALSE, reduce
   if (reduce) err = mean(err[!remove])
   err
 }
+
+#' Compute Grassman distance between two space
+#' @param A A numerical matrix
+#' @param B Another matrix that has the same dimension as \code{A}
+#' @export
+#' @keywords internal
+grassman_dist <- function(A, B){
+  Asvd = svd(A)
+  Bsvd = svd(B)
+  d = svd(t(Asvd$u) %*% Bsvd$u)$d
+  theta = acos(d)
+  sqrt(sum(theta^2))
+}

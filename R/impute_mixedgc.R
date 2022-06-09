@@ -96,7 +96,10 @@ impute_mixedgc = function(X, nlevels = 20,
 }
 
 
-
+#' Warapper
+#'@export
+#'@keywords internal
+impute_LRGC <- function(...) impute_mixedgc_ppca(...)
 
 #' Low rank Gaussian copula for incomplete mixed data
 #'
@@ -117,8 +120,7 @@ impute_mixedgc = function(X, nlevels = 20,
 #' @author Yuxuan Zhao, \email{yz2295@cornell.edu} and Madeleine Udell, \email{udell@cornell.edu}
 #' @references Zhao, Y., & Udell, M. (2020). Matrix Completion with Quantified Uncertainty through Low Rank Gaussian Copula. NeurIPS 2020.
 #' @export
-
-impute_mixedgc_ppca = function(X, rank, maxit=50, eps=0.01, nlevels = 20,verbose = FALSE){
+impute_LRGC = function(X, rank, maxit=50, eps=0.01, nlevels = 20,verbose = FALSE){
   n = dim(X)[1]
   p = dim(X)[2]
   X = as.numeric(as.matrix(X))

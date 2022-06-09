@@ -163,7 +163,7 @@ em_mixedgc_ppca_iter = function(Z, Z_lower, Z_upper, W, sigma){
 
         out_trunc = moments_truncnorm(mu_ij, sqrt(sigma_ij), Z_lower[i,j], Z_upper[i,j])
         mu_ij_new = out_trunc[['mean']]
-        sigma_ij_new = out_trunc[['var']]
+        sigma_ij_new = out_trunc[['std']]^2
 
         if (is.finite(mu_ij_new)){
           Z[i,j] = mu_ij_new # UPDATE Z: observed ordinal entry

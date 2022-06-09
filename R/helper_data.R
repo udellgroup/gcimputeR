@@ -59,23 +59,43 @@ generate_sigma <- function(p){
   cov2cor(Sigma)
 }
 
+#' Wrapper
+#' @export
+#' @keywords internal
+generate_mixed_from_gc <- function(...) generate_gc(...)
 
 #' Sample data from Gaussian copula distribution
 #'
-#' @description  Sample mixed data vector consisting of continuous, ordinal and binary marginals from a Gaussian copula model
-#' @param sigma a correlation matrix or a list of copula correlation matrices
-#' @param n number of samples to draw for each copula correlaiton matrix
+#' @description  Sample mixed data vector containing continuous, ordinal and binary data from a Gaussian copula model
+#' @param rank Only used for \code{generate_lrgc}
+#' @param n number of samples to draw
 #' @param seed random seed
-#' @param var_types A list indicating the locations of continuous, ordinal and binary variables
+#' @param var_types A list indicating the locations of continuous, ordinal and binary variables. The sum of its elements, \code{p}, is the desired number of variables
+#' @param data_only If \code{TRUE}, only return the generated data matrix
 #' @param cont_transform A monotonic function to be applied to continuous columns
-#' @param cutoff_by When ordinalizing, select cut points by absolute values if `dist` and by quantiles if `quantile`
-#' @param qmin Cutoff points are slected in the range of `qmin` and `qmax` quantiles of the data `x`
-#' @param qmax See `qmin`.
+#' @param cutoff_by When ordinalizing, select cut points by absolute values if \code{dist} and by quantiles if \code{quantile}
+#' @param qmin Cutoff points are selected in the range of \code{qmin} and \code{qmax} quantiles of the data
+#' @param qmax See \code{qmin}
 #' @param num_ord Number of ordinal levels to use
-#' @return an ordinal vector.
+#' @param corr Only used for \code{generate_gc}. \code{NULL}, or a correlation matrix or a list of copula correlation matrices
+#' @param W Only used for \code{generate_lrgc}.  \code{NULL}, or a matrix of dimension \code{p} by \code{rank}
+#' @param sigma Only used for \code{generate_lrgc}. A scalar between 0 and 1.
+#' @details For \code{generategc}, if \code{corr} is \code{NULL}, it will be allocated a random correlation matrix. For \code{generate_lrgc},  if \code{W} is \code{NULL}, it will be allocated a random matrix. \code{corr} used in LRGC is \code{Wt(W)+sigma*I}. If \code{corr} is a single correlation matrix, \code{n} samples will be generated from the Gaussian copula model with \code{corr} as the copula correlation. If \code{corr} is a list of correlation matrices, for each element of \code{corr}, \code{n} samples will be generated from the Gaussian copula model with that element as its copula correlation.
+#' @name generate_copula
+NULL
+#> NULL
+
+#' @describeIn generate_copula Generate samples from a full rank Gaussian copula
 #' @export
-generate_mixed_from_gc <- function(sigma=NULL, n=2000, seed=NULL, var_types = NULL,
-                                   cont_transform=NULL, cutoff_by='quantile', qmin=0.05, qmax=0.95, num_ord=5){
+#' @examples
+#' generate_gc(n=500, var_types = list('cont'=1:5, 'ord'=6:10, 'bin'=11:15))
+#' generate_gc(n=500, var_types = list('cont'=1:5, 'ord'=6:10), cont_transform=function(x)x^3)
+#' generate_gc(n=500, var_types = list('cont'=1:5, 'ord'=6:10), num_ord=3)
+generate_gc <- function(n=2000,  var_types = NULL,
+                        cont_transform=NULL,
+                        cutoff_by='quantile', qmin=0.05, qmax=0.95, num_ord=5,
+                        corr=NULL, seed=NULL, data_only=TRUE){
+  sigma = corr
   if (is.null(cont_transform)) cont_transform <- function(x) qexp(pnorm(x), rate = 1/3)
   if (is.null(var_types)) var_types = list('cont'=1:5, 'ord'=6:10, 'bin'=11:15)
   cont_index = var_types$cont
@@ -103,7 +123,49 @@ generate_mixed_from_gc <- function(sigma=NULL, n=2000, seed=NULL, var_types = NU
   for (i in ord_index) X[,i] = continuous2ordinal(X[,i], k=num_ord, by = cutoff_by, qmin = qmin, qmax = qmax)
   for (i in bin_index) X[,i] = continuous2ordinal(X[,i], k=2, by = cutoff_by, qmin = qmin, qmax = qmax)
 
-  X
+  if (data_only) X else list(X = X, corr = sigma)
+}
+
+#' @describeIn generate_copula Generate samples from a low rank Gaussian copula
+#' @export
+#' @examples
+#' generate_lrgc(rank = 5, sigma = 0.1, n=500, var_types = list('cont'=1:100), cont_transform=function(x)x^3)
+#' generate_lrgc(rank = 5, sigma = 0.1, n=500, var_types = list('ord'=1:100), num_ord=10)
+#' generate_lrgc(rank = 5, sigma = 0.1, n=500, var_types = list('bin'=1:100))
+generate_lrgc <- function(rank=5, sigma = 0.1, n=2000, var_types = NULL,
+                          cont_transform=NULL, cutoff_by='quantile', qmin=0.05, qmax=0.95, num_ord=5,
+                          W=NULL,seed=NULL,data_only=TRUE){
+  if (is.null(cont_transform)) cont_transform <- function(x) qexp(pnorm(x), rate = 1/3)
+  if (is.null(var_types)) var_types = list('cont'=1:20, 'ord'=21:40, 'bin'=41:60)
+  cont_index = var_types$cont
+  ord_index = var_types$ord
+  bin_index = var_types$bin
+  all_index = c(cont_index, ord_index, bin_index)
+  p = length(all_index)
+  if (min(all_index)!= 1 | max(all_index) != p | length(unique(all_index))!=p){
+    stop('Inconcistent specification of variable types indexing')
+  }
+
+  if (!is.null(seed)) set.seed(seed)
+  if (is.null(W)) W = matrix(rnorm(p*rank), nrow = p)
+  else stopifnot(dim(W) != c(p,rank))
+  stopifnot(sigma>0 & sigma<1)
+  if (!is.list(W)) W = list(W)
+
+
+  l = length(W)
+  X = vector('list', l)
+  for (i in 1:l){
+    W[[i]] = t(apply(W[[i]], 1, function(x){x/sqrt(sum(x^2))  * sqrt((1-sigma))}))
+    X[[i]] <- matrix(rnorm(n*rank), ncol = rank) %*% t(W[[i]]) + matrix(rnorm(n*p, sd = sqrt(sigma)), ncol = p)
+  }
+  X = do.call(rbind, X)
+
+  X[,cont_index] = cont_transform(X[,cont_index])
+  for (i in ord_index) X[,i] = continuous2ordinal(X[,i], k=num_ord, by = cutoff_by, qmin = qmin, qmax = qmax)
+  for (i in bin_index) X[,i] = continuous2ordinal(X[,i], k=2, by = cutoff_by, qmin = qmin, qmax = qmax)
+
+  if (data_only) X else list(X = X, W = W, sigma = sigma)
 }
 
 gen_nominal_copula_corr <- function(p_cat_vec, p_noncat, seed=NULL, eps=1e-2){
