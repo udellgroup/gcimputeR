@@ -170,7 +170,6 @@ impute_LRGC = function(X, rank, nlevels = 20,
   # Impute X using Imputed Z
   Ximp = Ximp_transform(Z = Zimp, X = X, d_index = d_index)
 
-  list(Ximp=Ximp, W = W, sigma = sigma, loglik=loglik,
-       Z=fit_em$Z, Zimp = Zimp, C = fit_em$C, cutoffs = cutoffs, S=fit_em$S)
+  list(Ximp=Ximp, W = W, sigma = sigma, loglik=loglik, Zimp = Zimp, C = fit_em$C, cutoffs = cutoffs)
 }
 

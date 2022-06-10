@@ -170,7 +170,8 @@ em_mixedgc_ppca = function(rank, Z, Lower, Upper,
     l = l+1
     est_iter = em_mixedgc_ppca_iter(Z, r_lower, r_upper,
                                     d_index = d_index,
-                                    W = W, sigma = sigma)
+                                    W = W, sigma = sigma,
+                                    n_update = n_update)
     Z = est_iter$Z
     W1 = est_iter$W
     loglik = c(loglik, est_iter$loglik)
@@ -200,5 +201,5 @@ em_mixedgc_ppca = function(rank, Z, Lower, Upper,
     }
   }
 
-  return(list(W=W, sigma = sigma, loglik=loglik, Z = Z, S = est_iter$S, C = est_iter$C))
+  return(list(W=W, sigma = sigma, loglik=loglik, Z = Z, C = est_iter$C))
 }

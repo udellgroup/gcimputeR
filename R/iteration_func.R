@@ -110,7 +110,7 @@ latent_operation <- function(task,
 #' @references Zhao, Y., & Udell, M. (2020). Matrix Completion with Quantified Uncertainty through Low Rank Gaussian Copula. arXiv preprint arXiv:2006.10829.
 #' @export
 #' @keywords internal
-em_mixedgc_ppca_iter = function(Z, Lower, Upper, d_index, W, sigma){
+em_mixedgc_ppca_iter = function(Z, Lower, Upper, d_index, W, sigma, n_update=1){
   Z_lower = Lower
   Z_upper = Upper
   # input: "Z" matrix with missing values
@@ -160,35 +160,20 @@ em_mixedgc_ppca_iter = function(Z, Lower, Upper, d_index, W, sigma){
 
     # Only implement when there is at least one observed ordinal dimension(to be imputed)
     # and another observed dimension (ordinal or continuous) used as information to impute
-    if (sum(obs_indices)>1 & any(ord_obs_indices)){
-      mu = (zi_obs - Ui_obs %*% (AU %*% zi_obs))/sigma # length is observed length < p
+    f_sigma_oo_inv_z = function(zobs) (zobs - (Ui_obs %*% (AU %*% zobs)))/sigma
+    sigma_oo_inv_diag = (1 - quad_mul(Ai, Ui_obs))/sigma
+    # truncated moments
+    out <- update_z_row_ord(Z[i,], Lower[i,], Upper[i,],
+                            obs_indices = obs_indices,
+                            ord_obs_indices = ord_obs_indices,
+                            ord_in_obs = ord_in_obs,
+                            obs_in_ord = obs_in_ord,
+                            f_sigma_oo_inv_z = f_sigma_oo_inv_z,
+                            sigma_oo_inv_diag = sigma_oo_inv_diag,
+                            n_update = n_update)
+    Z[i,] = out$mean
+    C[i,] = out$var
 
-      nordobs = sum(ord_obs_indices)
-      ord_obs_iter = which(ord_obs_indices)
-      ord_in_obs_iter = which(ord_in_obs)
-      obs_in_ord_iter = which(obs_in_ord)
-      for (k in 1:nordobs){
-        j = ord_obs_iter[k]
-        j_in_obs = ord_in_obs_iter[k]
-        j_in_ord = obs_in_ord_iter[k]
-
-        sigma_ij = sigma/(1-quad(Ai, U[j,]))
-        mu_ij = Z[i,j] - mu[j_in_obs] * sigma_ij
-
-        out_trunc = moments_truncnorm(mu_ij, sqrt(sigma_ij), Z_lower[i,j_in_ord], Z_upper[i,j_in_ord])
-        mu_ij_new = out_trunc[['mean']]
-        sigma_ij_new = out_trunc[['std']]^2
-
-        if (is.finite(mu_ij_new)){
-          Z[i,j] = mu_ij_new # UPDATE Z: observed ordinal entry
-        }
-        if (is.finite(sigma_ij_new)){
-          C[i,j] = sigma_ij_new          #UPDATE C
-        }
-      }
-    }
-
-    # update observed ordinal entries
     zi_obs = matrix(Z[i,obs_indices], ncol = 1)
     si = matrix(AU %*% zi_obs, ncol = 1)
     S[i,] = si

@@ -139,6 +139,13 @@ quad = function(A,x){
   as.numeric(t(x) %*% A %*% x)
 }
 
+quad_mul = function(A, X){
+  n = nrow(X)
+  vals = numeric(n)
+  for (i in 1:n) vals[i] = quad(A, X[i,])
+  vals
+}
+
 #' Impute missing entries for the Z matrix
 #'
 #' @description  Using the returned quantities from EM algorithm, impute missing entries for the Z matrix
