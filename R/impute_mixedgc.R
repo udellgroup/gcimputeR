@@ -120,7 +120,9 @@ impute_LRGC <- function(...) impute_mixedgc_ppca(...)
 #' @author Yuxuan Zhao, \email{yz2295@cornell.edu} and Madeleine Udell, \email{udell@cornell.edu}
 #' @references Zhao, Y., & Udell, M. (2020). Matrix Completion with Quantified Uncertainty through Low Rank Gaussian Copula. NeurIPS 2020.
 #' @export
-impute_LRGC = function(X, rank, maxit=50, eps=0.01, nlevels = 20,verbose = FALSE){
+impute_LRGC = function(X, rank, nlevels = 20,
+                       trunc_method = 'Iterative', n_sample=5000, n_update=1,
+                       maxit=50, eps=0.01, verbose = FALSE, runiter = 0, ...){
   n = dim(X)[1]
   p = dim(X)[2]
   X = as.numeric(as.matrix(X))
@@ -130,64 +132,45 @@ impute_LRGC = function(X, rank, maxit=50, eps=0.01, nlevels = 20,verbose = FALSE
   if (any(apply(X, 1, function(x){sum(!is.na(x))}) == 0)) stop('remove empty row')
   # Do not allow column with only one level
   if (any(apply(X, 2, function(x){length(unique(x[!is.na(x)]))}) <= 1)) stop('remove column with only 0 or 1 unique value')
-
-  # find ordinal dimensions
-  d_index = apply(X, 2, function(x){length(unique(x))<=nlevels})
-  k = sum(d_index)
-  # find continuous dimensions
+  d_index = apply(X, 2, function(x) {length(unique(x)) <= nlevels})
   c_index = !d_index
-  # marginal transformation
-  if (k>0){
-    r = range_transform(matrix(X[,d_index,drop=FALSE], nrow = n),
-                        type = 'ordinal') # matrix of latent scalars corresponding to measured values
-    r_lower = r$Lower
-    r_upper = r$Upper
-    cutoffs = list(k)
-    for (j in 1:k){
-      c = unique(r_lower[,j])
-      c = c[!is.na(c)] # remove NA
-      cutoffs[[j]] = c[is.finite(c)] # remove -Inf
-    }
-    rm(r)
-  }else{
-    r_lower = NULL
-    r_upper = NULL
-    cutoffs = NULL
-  }
 
-  if(k<p){
-    Z_continuous = range_transform(matrix(X[,c_index,drop=FALSE], nrow = n), type = 'continuous')$Z
-  }else{
-    Z_continuous = NULL
-  }
+  # observed to latent
+  obj_latent = observed_to_latent(X, d_index)
+  Z = obj_latent$Z
+  Lower = obj_latent$Lower
+  Upper = obj_latent$Upper
+
+  # TODO: store cutoff
+  if (any(d_index)){
+    k = sum(d_index)
+    cutoffs = list()
+    for (j in which(d_index)){
+      cuts = unique(Lower[,j])
+      cuts = cuts[!is.na(cuts)]
+      cutoffs[[as.character(j)]] = cuts[is.finite(cuts)]
+    }
+  }else cutoffs = NULL
+
 
   # EM: estimate correlation matrix
-  start = NULL
   #start = list(sig = 0, W = scale.corr(W =  matrix(rnorm(p*rank), ncol = rank), sig = 0)$W)
-  fit_em = em_mixedgc_ppca(rank = rank,
-                             Z_continuous =  Z_continuous, r_lower = r_lower, r_upper=r_upper,
-                             maxit = maxit, eps = eps,
-                             start = start,verbose = verbose)
-
+  fit_em = em_mixedgc_ppca(rank, Z,  Lower, Upper,
+                           d_index = d_index,
+                           maxit = maxit, eps = eps, runiter = runiter, verbose = verbose,
+                           trunc_method = trunc_method, n_sample=n_sample, n_update=n_update,
+                           ...)
   W = fit_em$W
   sigma = fit_em$sigma
+  loglik = fit_em$loglik
 
   # impute missing Z
-  Zimp = imputeZ_mixedgc_ppca(Z = fit_em$Zobs, S = fit_em$S, W = W)
+  Zimp = imputeZ_mixedgc_ppca(Z = fit_em$Z,  W = W, sigma = sigma)
 
   # Impute X using Imputed Z
-  order_ = c(which(d_index),which(c_index))
-  Xnew.p = Ximp_transform(Z = Zimp, X = X[,order_], d_index = d_index)
+  Ximp = Ximp_transform(Z = Zimp, X = X, d_index = d_index)
 
-  # Back to original permuation
-  W1 = W
-  Xnew = Xnew.p
-  if((k>0) & (k<p)){
-    W1[d_index,] = W[1:k,]
-    Xnew[,d_index] = Xnew.p[,1:k]
-    W1[c_index,] = W[(k+1):p,]
-    Xnew[,c_index] = Xnew.p[,(k+1):p]
-  }
-  return(list(Ximp=Xnew, W = W1, sigma = sigma, loglik=fit_em$loglik, Zimp = Zimp, C = fit_em$C, cutoffs = cutoffs))
+  list(Ximp=Ximp, W = W, sigma = sigma, loglik=loglik,
+       Z=fit_em$Z, Zimp = Zimp, C = fit_em$C, cutoffs = cutoffs, S=fit_em$S)
 }
 

@@ -110,12 +110,15 @@ latent_operation <- function(task,
 #' @references Zhao, Y., & Udell, M. (2020). Matrix Completion with Quantified Uncertainty through Low Rank Gaussian Copula. arXiv preprint arXiv:2006.10829.
 #' @export
 #' @keywords internal
-em_mixedgc_ppca_iter = function(Z, Z_lower, Z_upper, W, sigma){
+em_mixedgc_ppca_iter = function(Z, Lower, Upper, d_index, W, sigma){
+  Z_lower = Lower
+  Z_upper = Upper
   # input: "Z" matrix with missing values
-  n = dim(Z)[1]
-  p = dim(Z)[2]
-  rank = dim(W)[2]
-  if (is.null(Z_lower)) k = 0 else k = dim(Z_lower)[2]
+  n = nrow(Z)
+  p = ncol(Z)
+  rank = ncol(W)
+
+  #if (is.null(Z_lower)) k = 0 else k = dim(Z_lower)[2]
   negloglik = 0
 
   # SVD on W
@@ -133,35 +136,46 @@ em_mixedgc_ppca_iter = function(Z, Z_lower, Z_upper, W, sigma){
   # E-step iterate over n
   for (i in 1:n){
     # indexing
-    obs_indices = which(!is.na(Z[i,]))
-    d_in_o = which(obs_indices <= k)
-    index_d = obs_indices[d_in_o]
+    ord_indices = d_index
+    mis_indices = is.na(Z[i,])
+    obs_indices = !mis_indices
+    ord_obs_indices = ord_indices & obs_indices
+    ord_in_obs = ord_obs_indices[obs_indices]
+    obs_in_ord = ord_obs_indices[ord_indices]
+
+    #d_in_o = which(obs_indices <= k)
+    #index_d = obs_indices[d_in_o]
 
     #
     zi_obs = matrix(Z[i,obs_indices], ncol = 1)
-    Ui_obs = matrix(U[obs_indices,],ncol = rank)
+    Ui_obs = matrix(U[obs_indices,], ncol = rank)
     UU_obs = t(Ui_obs) %*% Ui_obs
 
     # used in both ordinal and factor block
     ans = solve(sigma * diag(d^{-2}) + UU_obs, cbind(diag(rank), t(Ui_obs)))
-    AU = ans[,-(1:rank)]
-    Ai = ans[,1:rank]
+    AU = ans[,-(1:rank),drop=FALSE]
+    Ai = ans[,1:rank,drop=FALSE]
     A[i,,] = Ai
 
 
     # Only implement when there is at least one observed ordinal dimension(to be imputed)
     # and another observed dimension (ordinal or continuous) used as information to impute
-    if (length(obs_indices)>1 & length(index_d) >=1){
+    if (sum(obs_indices)>1 & any(ord_obs_indices)){
       mu = (zi_obs - Ui_obs %*% (AU %*% zi_obs))/sigma # length is observed length < p
 
-      for (j in index_d){
-        j_in_o = which(obs_indices == j)
-        ind_j = setdiff(obs_indices, j)
+      nordobs = sum(ord_obs_indices)
+      ord_obs_iter = which(ord_obs_indices)
+      ord_in_obs_iter = which(ord_in_obs)
+      obs_in_ord_iter = which(obs_in_ord)
+      for (k in 1:nordobs){
+        j = ord_obs_iter[k]
+        j_in_obs = ord_in_obs_iter[k]
+        j_in_ord = obs_in_ord_iter[k]
 
         sigma_ij = sigma/(1-quad(Ai, U[j,]))
-        mu_ij = Z[i,j] - mu[j_in_o] * sigma_ij
+        mu_ij = Z[i,j] - mu[j_in_obs] * sigma_ij
 
-        out_trunc = moments_truncnorm(mu_ij, sqrt(sigma_ij), Z_lower[i,j], Z_upper[i,j])
+        out_trunc = moments_truncnorm(mu_ij, sqrt(sigma_ij), Z_lower[i,j_in_ord], Z_upper[i,j_in_ord])
         mu_ij_new = out_trunc[['mean']]
         sigma_ij_new = out_trunc[['std']]^2
 
@@ -227,7 +241,7 @@ em_mixedgc_ppca_iter = function(Z, Z_lower, Z_upper, W, sigma){
   # scaling
   est = scale_corr(Wnew, sigma_new)
 
-  return(list(W = est$W, sigma = est$sigma, loglik=-negloglik/2, Zobs=Z, S = S, C=C))
+  return(list(W = est$W, sigma = est$sigma, loglik=-negloglik/2, Z=Z, S = S, C=C))
 }
 
 

@@ -132,45 +132,22 @@ em_mixedgc = function(Z, Lower, Upper,
 #' @references Zhao, Y., & Udell, M. (2020). Matrix Completion with Quantified Uncertainty through Low Rank Gaussian Copula. arXiv preprint arXiv:2006.10829.
 #' @export
 #' @keywords internal
-em_mixedgc_ppca = function(rank, Z_continuous, r_lower, r_upper,
-                           start =NULL, maxit=100, eps=0.01, verbose = FALSE){
-  if (is.null(Z_continuous)){
-    p = dim(r_upper)[2]
-    k = p
-  }
-  else{
-    if (is.null(r_upper)){
-      p = dim(Z_continuous)[2]
-      k=0
-    }
-    else{
-      p = dim(r_upper)[2] +  dim(Z_continuous)[2]
-      k = dim(r_upper)[2]
-    }
-  }
-
-  # Initialize observed ordinal values
-  if (k > 0){
-    Z_ordinal = initZ_interval_truncated(Lower = r_lower, Upper = r_upper)
-  } else Z_ordinal = NULL
+em_mixedgc_ppca = function(rank, Z, Lower, Upper,
+                           d_index, dcat_index=NULL,
+                           cat_input=NULL,
+                           start =NULL,
+                           trunc_method='Iterative', n_sample=5000, n_update=1,
+                           maxit=50, eps=0.01, verbose=FALSE, runiter=0){
+  r_lower = Lower
+  r_upper = Upper
+  p = length(d_index)
+  c_index = !d_index
 
   # Initialize with SVD imputation for Z
   if(is.null(start)){
-    Z_meanimp = cbind(Z_ordinal, Z_continuous)
-    Z_meanimp[is.na(Z_meanimp)] = 0
-
-    # approximate Z_meanimp by a low rank SVD
-    # and correspondingly update Z_ordinal
-    Z_meanimp = impute_init(Z_meanimp, rank, r_upper, r_lower)
-    ind = which(!is.na(Z_ordinal))
-    Z_ordinal[ind] = Z_meanimp[ind]
-    Z = cbind(Z_ordinal, Z_continuous)
-    Z_meanimp[!is.na(Z)] = Z[!is.na(Z)]
-
-    R = cor(Z_meanimp)
+    Z_imp = impute_init(Z, rank, Lower, Upper, d_index)
+    R = cor(Z_imp)
     est = svd(R)
-    rm(Z_meanimp, R)
-
     sigma = mean(est$d[-(1:rank)])
     W = est$u[,1:rank] %*% diag(sqrt(est$d[1:rank] - sigma))
 
@@ -184,33 +161,44 @@ em_mixedgc_ppca = function(rank, Z_continuous, r_lower, r_upper,
     sigma = start$sigma
   }
 
-  Z = cbind(Z_ordinal, Z_continuous)
+  #Z = cbind(Z_ordinal, Z_continuous)
   l=0
   loglik = NULL
   #diffW = list()
   #estvar = NULL
   repeat{
     l = l+1
-    est_iter = em_mixedgc_ppca_iter(Z, r_lower, r_upper, W, sigma)
-    Z = est_iter$Zobs
+    est_iter = em_mixedgc_ppca_iter(Z, r_lower, r_upper,
+                                    d_index = d_index,
+                                    W = W, sigma = sigma)
+    Z = est_iter$Z
     W1 = est_iter$W
     loglik = c(loglik, est_iter$loglik)
     #
-    err = sqrt(sum((W1-W)^2)/sum(W^2))
+    #err = sqrt(sum((W1-W)^2)/sum(W^2))
+    err = norm(W1-W, type = 'F')/norm(W, type = 'F')
     #diffW[[l]] = c(err, grassman_dist(W1,W))
     #estvar = c(estvar, est_iter$sigma)
-    if (verbose){
-      print(paste('update error:', err, ' estimated var:',est_iter$sigma))
-      print(paste('likelihood: ', est_iter$loglik))
-    }
-    if (err<eps) break
-    if (l > maxit){
-      warning('Max iter reached in EM')
-      break
-    }
     W = W1
     sigma = est_iter$sigma
+    if (verbose){
+      print(paste0('Iteration ', l,
+                   ': ', 'copula parameter change ', round(err, 4),
+                   ', likelihood ', round(est_iter$loglik, 4),
+                   ', estimated var ', round(est_iter$sigma, 4)))
+    }
+
+    # determine convergence
+    if (runiter==0){
+      if (err<eps) break
+      if (l > maxit){
+        warning('Max iter reached in EM')
+        break
+      }
+    }else{
+      if (l>=runiter) break
+    }
   }
 
-  return(list(W=W, sigma = sigma, loglik=loglik, Zobs = Z, S = est_iter$S, C = est_iter$C))
+  return(list(W=W, sigma = sigma, loglik=loglik, Z = Z, S = est_iter$S, C = est_iter$C))
 }

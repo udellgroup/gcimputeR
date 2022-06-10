@@ -60,16 +60,26 @@ to_nearest_ord_vec <- function(x, xobs){
 #' @return A complte Z matrix
 #' @export
 #' @keywords internal
-impute_init = function(Z_meanimp, rank, r_lower, r_upper){
-  obj = svd(Z_meanimp, nv=rank)
-  Z = obj$u[,1:rank] %*% diag(obj$d[1:rank]) %*% t(obj$v)
-  if (!is.null(r_lower)){
-    k = dim(r_lower)[2]
-    ind = union(which(Z[,1:k]>r_upper), which(Z[,1:k]<r_lower))
-    Z[,1:k][ind] = Z_meanimp[,1:k][ind]
+impute_init = function(Z, rank, Lower, Upper, d_index){
+  Z_imp = Z
+  Z_imp[is.na(Z)] = 0
+  obj = svd(Z_imp, nv=rank)
+  Z_imp = obj$u[,1:rank] %*% diag(obj$d[1:rank]) %*% t(obj$v)
+
+  p = ncol(Z)
+  j_in_ord = 1
+  for (j in 1:p){
+    index_o = which(!is.na(Z[,j]))
+    if (d_index[j]){
+      index = Z_imp[index_o,j] < Lower[index_o,j_in_ord] | Z_imp[index_o,j] > Upper[index_o,j_in_ord]
+      Z_imp[index_o[index],j] = Z[index_o[index],j]
+      j_in_ord = j_in_ord + 1
+    }else{
+      Z_imp[index_o,j] = Z[index_o,j]
+    }
   }
 
-  Z
+  Z_imp
 }
 
 #' Adjust estiamted correlation parameters
@@ -133,12 +143,11 @@ quad = function(A,x){
 #'
 #' @description  Using the returned quantities from EM algorithm, impute missing entries for the Z matrix
 #' @param Z The returned \code{Zobs} matrix from EM algorithm
-#' @param S Returned from EM algorithm
 #' @param W The returned estimate for \code{W} matrix
 #' @return The imputed complete \code{Z} matrix
 #' @export
 #' @keywords internal
-imputeZ_mixedgc_ppca = function(Z, W, S){
+imputeZ_mixedgc_ppca = function(Z, W, sigma){
   n = dim(Z)[1]
   p = dim(Z)[2]
   obj = svd(W)
@@ -147,8 +156,13 @@ imputeZ_mixedgc_ppca = function(Z, W, S){
   rank = length(d)
 
   for (i in 1:n){
-    index_m = which(is.na(Z[i,]))
-    Z[i,index_m] =  matrix(U[index_m,], ncol = rank) %*% matrix(S[i,], ncol = 1)
+    index_m = is.na(Z[i,])
+    index_o = !index_m
+    Ui_obs = U[index_o,,drop=FALSE]
+    zi_obs = matrix(Z[i, index_o], ncol = 1)
+    UU_obs = t(Ui_obs) %*% Ui_obs
+    si = solve(sigma * diag(d^{-2}) + UU_obs, t(Ui_obs) %*% zi_obs)
+    Z[i,index_m] =  matrix(U[index_m,], ncol = rank) %*% matrix(si, ncol = 1)
   }
   Z
 }
