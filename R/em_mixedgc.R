@@ -15,7 +15,7 @@ simple_imp <- function(Z, col_mean=FALSE, std=0){
 #' @param Z Transformed latent matrix
 #' @inheritParams initZ_interval_truncated
 #' @inheritParams observed_to_latent
-#' @inheritParams impute_mixedgc
+#' @inheritParams impute_GC
 #' @param corr_min_eigen  If the minimal eigenvalue of a correlation estimate is below \code{corr_min_eigen}, it will be regularized to have minimal eigenvalue equal to \code{corr_min_eigen}
 #' @param dcat_index Boolean vector with \code{TRUE} at categorical dimensions
 #' @param cat_input Input for categorical dimensions
@@ -112,13 +112,7 @@ em_mixedgc = function(Z, Lower, Upper,
 #'
 #' @description  fit the Gaussian copula model from incomplete mixed data
 #' @param rank the number of latent factors
-#' @param Z_continuous Continuous columns
-#' @param r_lower Lower boundary of truncated intervals for ordinal columns
-#' @param r_upper Upper boundary of truncated intervals for ordinal columns
-#' @param start Initial value of copula correlation matrix. Default is \code{NULL}.
-#' @param maxit maximum number of iterations
-#' @param eps Convergence threshold
-#' @param verbose If true, output each iteration's detail
+#' @inheritParams  em_mixedgc
 #' @return A list containing fitted copula parameters, the likelihood (objective function), Z matrix with updated ordinal entries and the conditional variance corresponding to the observed Z matrix.
 #' \describe{
 #'   \item{\code{W}}{Fitted latent low rank subspace matrix}
@@ -138,9 +132,8 @@ em_mixedgc_ppca = function(rank, Z, Lower, Upper,
                            start =NULL,
                            trunc_method='Iterative', n_sample=5000, n_update=1,
                            maxit=50, eps=0.01, verbose=FALSE, runiter=0){
-  r_lower = Lower
-  r_upper = Upper
   p = length(d_index)
+  n = nrow(Z)
   c_index = !d_index
 
   # Initialize with SVD imputation for Z
@@ -168,26 +161,43 @@ em_mixedgc_ppca = function(rank, Z, Lower, Upper,
   #estvar = NULL
   repeat{
     l = l+1
-    est_iter = em_mixedgc_ppca_iter(Z, r_lower, r_upper,
+    'est_iter = em_mixedgc_ppca_iter(Z, r_lower, r_upper,
                                     d_index = d_index,
                                     W = W, sigma = sigma,
                                     n_update = n_update)
-    Z = est_iter$Z
-    W1 = est_iter$W
-    loglik = c(loglik, est_iter$loglik)
+    '
+    Wsvd = svd(W)
+    U = Wsvd$u
+    d = Wsvd$d
+    V = Wsvd$v
+    # Estep
+    E_iter = latent_operation_LRGC('em', Z, Lower, Upper,
+                                   d_index = d_index,
+                                   U = U, d = d, sigma = sigma,
+                                   n_update = n_update)
+    Z = E_iter$Z
+    loglik_i = E_iter$loglik/n
+    Cord = E_iter$var_ordinal
+    M_iter = Mstep_LRGC(Z = Z, Cord = Cord, U = U, sigma = sigma,
+                        A = E_iter$A, S = E_iter$S, SS = E_iter$SS)
+    s = E_iter$zobs_norm + sum(Cord) - M_iter$s
+    sigma_new = s/sum(!is.na(Z))
+    Wnew = M_iter$W %*% (d * t(V))
+    para_scale = scale_corr(Wnew, sigma_new)
+
+    W1 = para_scale$W
+    sigma = para_scale$sigma
+
     #
-    #err = sqrt(sum((W1-W)^2)/sum(W^2))
     err = norm(W1-W, type = 'F')/norm(W, type = 'F')
-    #diffW[[l]] = c(err, grassman_dist(W1,W))
-    #estvar = c(estvar, est_iter$sigma)
     W = W1
-    sigma = est_iter$sigma
     if (verbose){
       print(paste0('Iteration ', l,
                    ': ', 'copula parameter change ', round(err, 4),
-                   ', likelihood ', round(est_iter$loglik, 4),
-                   ', estimated var ', round(est_iter$sigma, 4)))
+                   ', likelihood ', round(loglik_i, 4),
+                   ', estimated var ', round(sigma, 4)))
     }
+    loglik = c(loglik, loglik_i)
 
     # determine convergence
     if (runiter==0){
@@ -201,5 +211,5 @@ em_mixedgc_ppca = function(rank, Z, Lower, Upper,
     }
   }
 
-  return(list(W=W, sigma = sigma, loglik=loglik, Z = Z, C = est_iter$C))
+  return(list(W=W, sigma = sigma, loglik=loglik, Z = Z, C = Cord))
 }

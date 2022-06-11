@@ -106,13 +106,19 @@ scale_corr = function(W, sigma){
 #'
 #' @description  For a 3d matrix M with dimension n*k*k, sum over dimension (2,3) with scale c, at entries selected by index in dimension 1
 #' @param M A 3d matrix with dimension n*k*k
-#' @param c A vector of length n
+#' @param v A vector of length n
 #' @param index a subset of \{1,2,...,n\}
 #' @return A k*k matrix
 #' @keywords internal
-sum_3d_scale = function(M, c, index){
-  apply(M, c(2,3), function(x){sum(x[index] * c[index])})
+sum_3d_scale = function(M, v, index=NULL){
+  if (!is.null(index)){
+    apply(M, c(2,3), function(x){sum(x[index] * v[index])})
+  }else{
+    apply(M, c(2,3), function(x){sum(x* v)})
+  }
 }
+
+
 
 #' Sum a 2d matrix along one axis
 #'
@@ -122,9 +128,13 @@ sum_3d_scale = function(M, c, index){
 #' @param index a subset of \{1,2,...,n\}
 #' @return A k*1 matrix
 #' @keywords internal
-sum_2d_scale = function(M, c, index){
-  v = apply(M, 2, function(x){sum(x[index] * c[index])})
-  matrix(v,ncol = 1)
+sum_2d_scale = function(M, v, index=NULL){
+  if (!is.null(index)){
+    r = apply(M, 2, function(x){sum(x[index] * v[index])})
+  }else{
+    r= apply(M, 2, function(x){sum(x*v)})
+  }
+  matrix(r, ncol = 1)
 }
 
 #' Quadratic form

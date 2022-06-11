@@ -212,17 +212,108 @@ latent_operation_row <- function(task,
   out_return
 }
 
-"
-'Explicit' = {
-  out <- est_z_row_ord(z, lower, upper,
-                       obs_indices = obs_indices,
-                       ord_obs_indices = ord_obs_indices,
-                       ord_in_obs = ord_in_obs,
-                       obs_in_ord = obs_in_ord,
-                       sigma_oo = A_sigma_tA_at_cat(sigma_oo, A, cat_index=ord_in_obs),
-                       method = 'Explicit')
-},
-"
+latent_operation_LRGC_row <- function(task,
+                                      z, lower, upper,
+                                      d_index,
+                                      U,d,sigma,
+                                      cat_input = NULL, dcat_index=NULL,
+                                      trunc_method='Iterative', n_sample=5000, n_update=1, n_MI=1){
+  out_return = list()
+
+  p = nrow(U)
+  rank = ncol(U)
+
+  mis_indices = is.na(z)
+  obs_indices = !mis_indices
+  ord_indices = d_index
+  ord_obs_indices = ord_indices & obs_indices
+  ord_in_obs = ord_obs_indices[obs_indices]
+  obs_in_ord = ord_obs_indices[ord_indices]
+
+  #
+  Ui_obs = U[obs_indices,,drop=FALSE]
+  UU_obs = t(Ui_obs) %*% Ui_obs
+  #
+  ans = solve(sigma * diag(d^{-2}) + UU_obs, cbind(diag(rank), t(Ui_obs)))
+  Ai = ans[,1:rank,drop=FALSE]
+  AU = ans[,-(1:rank),drop=FALSE]
+
+  # preprocessing stage when categorical data exists
+  if (is.null(dcat_index)) dcat_index = logical(p)
+  cat_obs_indices = dcat_index & obs_indices
+  cat_in_obs = cat_obs_indices[obs_indices]
+  if (any(cat_obs_indices)){
+    stop('unimplemented')
+  }else A = NULL
+
+  stopifnot(trunc_method %in% c('Iterative', 'Sampling'))
+
+  # update ordinal latent Z
+  if (task %in% c('em', 'fillup')){
+    switch (trunc_method,
+            'Iterative' = {
+              f_sigma_oo_inv_z = function(zobs) (zobs - (Ui_obs %*% (AU %*% zobs)))/sigma
+              sigma_oo_inv_diag = (1 - quad_mul(Ai, Ui_obs))/sigma
+              out <- update_z_row_ord(z, lower, upper,
+                                      obs_indices = obs_indices,
+                                      ord_obs_indices = ord_obs_indices,
+                                      ord_in_obs = ord_in_obs,
+                                      obs_in_ord = obs_in_ord,
+                                      f_sigma_oo_inv_z = f_sigma_oo_inv_z,
+                                      sigma_oo_inv_diag = sigma_oo_inv_diag,
+                                      n_update = n_update)
+            },
+            'Sampling' = {
+              stop('unimplemented')
+            }
+    )
+
+    # truncated moments
+    z = out$mean
+    if (any(is.na(z[obs_indices]))) stop('invalid Zobs')
+    if (is.null(out$cov)){
+      if (is.null(out$var)) stop('wrong return from trunc ordinal update')
+      cov_ordinal = diag(out$var)
+    }else{
+      cov_ordinal = out$cov
+    }
+
+    zi_obs = z[obs_indices]
+    si = matrix(AU %*% zi_obs, ncol = 1)
+    var_ordinal = diag(cov_ordinal)
+    switch (task,
+            'em' = {
+              out_return[['var_ordinal']] = var_ordinal
+              out_return[['Z']] = z
+              out_return[['A']] = Ai
+              out_return[['S']] = si
+              out_return[['SS']] =  AU %*% (var_ordinal[obs_indices] * t(AU)) + si %*% t(si)
+
+              # pseudo-likelihood
+              nobs = sum(obs_indices)
+              negloglik = p*log(2*pi) + log(sigma) * (nobs-rank)
+              negloglik = negloglik + c(determinant(diag(rank) * sigma + outer(d, d) * UU_obs)$modulus)
+              negloglik = negloglik + sum(zi_obs^2) - (t(zi_obs) %*% (Ui_obs %*% si))/sigma
+              loglik = -negloglik/2
+              out_return[['loglik']] = loglik
+              out_return[['zobs_norm']] = sum(zi_obs^2)
+            },
+            'fillup' = {
+              out_return[['var_ordinal']] = var_ordinal
+              zimp = z
+              zimp[mis_indices] = U[mis_indices,,drop=FALSE] %*% si
+              out_return[['Zimp']] = zimp
+            }
+    )
+  }else{
+    stop('unimplemented')
+  }
+
+  out_return
+}
+
+
+
 
 
 #' Compute the observed ordinal mean and var in a row
