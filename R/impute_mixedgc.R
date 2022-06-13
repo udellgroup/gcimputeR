@@ -13,6 +13,11 @@ optim_params <- function(){
   )
 }
 
+#' Wrapper
+#'@export
+#'@keywords internal
+impute_mixedgc <- function(...) impute_GC(...)
+
 
 #' Gaussian copula for incomplete mixed data
 #'
@@ -49,7 +54,7 @@ optim_params <- function(){
 #' # Compute imputation Error
 #' cal_mae_scaled(xhat = fit$Ximp, xobs = Xmask, xtrue = X)
 #'
-impute_mixedgc = function(X, nlevels = 20,
+impute_GC = function(X, nlevels = 20,
                           trunc_method = 'Iterative', n_sample=5000, n_update=1,
                           maxit=50, eps=0.01, verbose=FALSE, runiter = 0, n_MI=0,
                           corr = NULL,...){
@@ -96,16 +101,16 @@ impute_mixedgc = function(X, nlevels = 20,
 }
 
 
-#' Warapper
+#' Wrapper
 #'@export
 #'@keywords internal
-impute_LRGC <- function(...) impute_mixedgc_ppca(...)
+impute_mixedgc_ppca <- function(...) impute_LRGC(...)
 
 #' Low rank Gaussian copula for incomplete mixed data
 #'
 #' @description  Fit a low rank Gaussian copula model from (continuous and ordinal) mixed data and impute the missing entries using the fitted model
 #' @param rank The rank, i.e. number of latent factors
-#' @inheritParams impute_mixedgc
+#' @inheritParams impute_GC
 #' @details Impute the missing entries of continuous and ordinal mixed data by fitting a low rank Gaussian copula (LRGC) model to the data. LRGC is a subclass of Gaussian copula: it requires the copula correlation matrix to have a low rank plus diagonal decomposition: \eqn{\Sigma = WW^\top + \sigma^2 \mathrm{I}_p} where \eqn{W\in \mathbb{R}\times {p\times k}} and \eqn{k<p}.
 #' @return A list containing:
 #' \describe{

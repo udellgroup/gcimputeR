@@ -4,12 +4,12 @@
 \alias{sum_3d_scale}
 \title{Sum a 3d matrix along one axis}
 \usage{
-sum_3d_scale(M, c, index)
+sum_3d_scale(M, v, index = NULL)
 }
 \arguments{
 \item{M}{A 3d matrix with dimension n*k*k}
 
-\item{c}{A vector of length n}
+\item{v}{A vector of length n}
 
 \item{index}{a subset of \{1,2,...,n\}}
 }

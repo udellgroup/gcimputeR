@@ -4,12 +4,12 @@
 \alias{impute_init}
 \title{Return a complete Z matrix based on SVD initialization}
 \usage{
-impute_init(Z_meanimp, rank, r_lower, r_upper)
+impute_init(Z, rank, Lower, Upper, d_index)
 }
 \arguments{
-\item{Z_meanimp}{Initial complete Z with mean (i.e. zero) imputation}
-
 \item{rank}{the number of latent factors}
+
+\item{Z_meanimp}{Initial complete Z with mean (i.e. zero) imputation}
 
 \item{r_lower}{Lower boundary of truncated intervals for ordinal columns}
 

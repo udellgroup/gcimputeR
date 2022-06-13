@@ -290,11 +290,11 @@ em_mixedgc_ppca_iter = function(Z, Lower, Upper, d_index, W, sigma, n_update=1){
   for (j in 1:p){
     index_j = which(!is.na(Z[,j]))
     # numerator
-    AC[j,,] = sum_3d_scale(A, c = C[,j], index = index_j)
-    rj = sum_2d_scale(M = S, c = Z[,j], index = index_j) + AC[j,,] %*% matrix(U[j,], ncol=1)
+    AC[j,,] = sum_3d_scale(A, v = C[,j], index = index_j)
+    rj = sum_2d_scale(M = S, v = Z[,j], index = index_j) + AC[j,,] %*% matrix(U[j,], ncol=1)
     # denominator
-    ASC[j,,] = sum_3d_scale(SC, c = rep(1,n), index = index_j) + sum_3d_scale(A, c = rep(sigma,n), index = index_j)
-    Fj = sum_3d_scale(tSC, c = rep(1,n), index = index_j) +  ASC[j,,]
+    ASC[j,,] = sum_3d_scale(SC, v = rep(1,n), index = index_j) + sum_3d_scale(A, v = rep(sigma,n), index = index_j)
+    Fj = sum_3d_scale(tSC, v = rep(1,n), index = index_j) +  ASC[j,,]
     # update
     Wnew[j,] = solve(Fj, rj)
   }

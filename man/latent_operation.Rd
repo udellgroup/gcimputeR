@@ -41,8 +41,6 @@ latent_operation(
 \item{n_update}{The number of updates, only used when \code{trunc_method} is \code{'Iterative'}}
 
 \item{n_sample}{Number of MC samples, only used when \code{trunc_method} is \code{'Sampling'}}
-
-\item{n_MI}{The number of random samples to draw from the missing distribution.}
 }
 \value{
 A list containing

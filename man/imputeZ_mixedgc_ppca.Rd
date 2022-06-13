@@ -4,14 +4,12 @@
 \alias{imputeZ_mixedgc_ppca}
 \title{Impute missing entries for the Z matrix}
 \usage{
-imputeZ_mixedgc_ppca(Z, W, S)
+imputeZ_mixedgc_ppca(Z, W, sigma)
 }
 \arguments{
 \item{Z}{The returned \code{Zobs} matrix from EM algorithm}
 
 \item{W}{The returned estimate for \code{W} matrix}
-
-\item{S}{Returned from EM algorithm}
 }
 \value{
 The imputed complete \code{Z} matrix

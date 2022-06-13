@@ -6,31 +6,52 @@
 \usage{
 em_mixedgc_ppca(
   rank,
-  Z_continuous,
-  r_lower,
-  r_upper,
+  Z,
+  Lower,
+  Upper,
+  d_index,
+  dcat_index = NULL,
+  cat_input = NULL,
   start = NULL,
-  maxit = 100,
+  trunc_method = "Iterative",
+  n_sample = 5000,
+  n_update = 1,
+  maxit = 50,
   eps = 0.01,
-  verbose = FALSE
+  verbose = FALSE,
+  runiter = 0
 )
 }
 \arguments{
 \item{rank}{the number of latent factors}
 
-\item{Z_continuous}{Continuous columns}
+\item{Z}{Transformed latent matrix}
 
-\item{r_lower}{Lower boundary of truncated intervals for ordinal columns}
+\item{Lower}{Lower boundary of truncated intervals}
 
-\item{r_upper}{Upper boundary of truncated intervals for ordinal columns}
+\item{Upper}{Upper boundary of truncated intervals}
 
-\item{start}{Initial value of copula correlation matrix. Default is \code{NULL}.}
+\item{d_index}{Boolean vector with \code{TRUE} at ordinal dimensions}
 
-\item{maxit}{maximum number of iterations}
+\item{dcat_index}{Boolean vector with \code{TRUE} at categorical dimensions}
+
+\item{cat_input}{Input for categorical dimensions}
+
+\item{start}{Initial value of copula correlation}
+
+\item{trunc_method}{Method for evaluating truncated normal moments: \code{'Iterative'} or \code{'Sampling'}.}
+
+\item{n_sample}{Number of MC samples, only used when \code{trunc_method} is \code{'Sampling'}}
+
+\item{n_update}{The number of updates, only used when \code{trunc_method} is \code{'Iterative'}}
+
+\item{maxit}{Maximum number of iterations}
 
 \item{eps}{Convergence threshold}
 
-\item{verbose}{If true, output each iteration's detail}
+\item{verbose}{Whether to print progress information}
+
+\item{runiter}{When set as a positive integer, the algorithm will run the specified number of iterations exactly.}
 }
 \value{
 A list containing fitted copula parameters, the likelihood (objective function), Z matrix with updated ordinal entries and the conditional variance corresponding to the observed Z matrix.
@@ -38,9 +59,8 @@ A list containing fitted copula parameters, the likelihood (objective function),
   \item{\code{W}}{Fitted latent low rank subspace matrix}
   \item{\code{sigma}}{Fitted noise variance}
   \item{\code{loglik}}{The log-likelihood achieved during iteration.}
-  \item{\code{Zobs}}{Incomplete \code{Z} with approximated observed ordinal entries}
+  \item{\code{Z}}{Incomplete \code{Z} with approximated observed ordinal entries}
   \item{\code{C}}{The conditional variance corresponding to the observed Z matrix. Useful for quantifying imputation uncertainty.}
-  \item{\code{S}}{Required quantity to impute the Z matrix}
 }
 }
 \description{

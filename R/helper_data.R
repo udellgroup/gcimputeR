@@ -62,7 +62,7 @@ generate_sigma <- function(p){
 #' Wrapper
 #' @export
 #' @keywords internal
-generate_mixed_from_gc <- function(...) generate_gc(...)
+generate_mixed_from_gc <- function(...) generate_GC(...)
 
 #' Sample data from Gaussian copula distribution
 #'
@@ -88,10 +88,10 @@ NULL
 #' @describeIn generate_copula Generate samples from a full rank Gaussian copula
 #' @export
 #' @examples
-#' generate_gc(n=500, var_types = list('cont'=1:5, 'ord'=6:10, 'bin'=11:15))
-#' generate_gc(n=500, var_types = list('cont'=1:5, 'ord'=6:10), cont_transform=function(x)x^3)
-#' generate_gc(n=500, var_types = list('cont'=1:5, 'ord'=6:10), num_ord=3)
-generate_gc <- function(n=2000,  var_types = NULL,
+#' generate_GC(n=500, var_types = list('cont'=1:5, 'ord'=6:10, 'bin'=11:15))
+#' generate_GC(n=500, var_types = list('cont'=1:5, 'ord'=6:10), cont_transform=function(x)x^3)
+#' generate_GC(n=500, var_types = list('cont'=1:5, 'ord'=6:10), num_ord=3)
+generate_GC <- function(n=2000,  var_types = NULL,
                         cont_transform=NULL,
                         cutoff_by='quantile', qmin=0.05, qmax=0.95, num_ord=5,
                         corr=NULL, seed=NULL, data_only=TRUE){
@@ -129,10 +129,11 @@ generate_gc <- function(n=2000,  var_types = NULL,
 #' @describeIn generate_copula Generate samples from a low rank Gaussian copula
 #' @export
 #' @examples
-#' generate_lrgc(rank = 5, sigma = 0.1, n=500, var_types = list('cont'=1:100), cont_transform=function(x)x^3)
-#' generate_lrgc(rank = 5, sigma = 0.1, n=500, var_types = list('ord'=1:100), num_ord=10)
-#' generate_lrgc(rank = 5, sigma = 0.1, n=500, var_types = list('bin'=1:100))
-generate_lrgc <- function(rank=5, sigma = 0.1, n=2000, var_types = NULL,
+#' f = function(x)x^3
+#' generate_LRGC(rank = 5, sigma = 0.1, n = 500, var_types = list('cont'=1:99), cont_transform = f)
+#' generate_LRGC(rank = 5, sigma = 0.1, n = 500, var_types = list('ord'=1:99), num_ord = 10)
+#' generate_LRGC(rank = 5, sigma = 0.1, n = 500, var_types = list('bin'=1:99))
+generate_LRGC <- function(rank=5, sigma = 0.1, n=2000, var_types = NULL,
                           cont_transform=NULL, cutoff_by='quantile', qmin=0.05, qmax=0.95, num_ord=5,
                           W=NULL,seed=NULL,data_only=TRUE){
   if (is.null(cont_transform)) cont_transform <- function(x) qexp(pnorm(x), rate = 1/3)

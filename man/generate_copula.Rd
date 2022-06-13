@@ -2,11 +2,11 @@
 % Please edit documentation in R/helper_data.R
 \name{generate_copula}
 \alias{generate_copula}
-\alias{generate_gc}
-\alias{generate_lrgc}
+\alias{generate_GC}
+\alias{generate_LRGC}
 \title{Sample data from Gaussian copula distribution}
 \usage{
-generate_gc(
+generate_GC(
   n = 2000,
   var_types = NULL,
   cont_transform = NULL,
@@ -19,7 +19,7 @@ generate_gc(
   data_only = TRUE
 )
 
-generate_lrgc(
+generate_LRGC(
   rank = 5,
   sigma = 0.1,
   n = 2000,
@@ -69,16 +69,17 @@ For \code{generategc}, if \code{corr} is \code{NULL}, it will be allocated a ran
 }
 \section{Functions}{
 \itemize{
-\item \code{generate_gc}: Generate samples from a full rank Gaussian copula
+\item \code{generate_GC}: Generate samples from a full rank Gaussian copula
 
-\item \code{generate_lrgc}: Generate samples from a low rank Gaussian copula
+\item \code{generate_LRGC}: Generate samples from a low rank Gaussian copula
 }}
 
 \examples{
-generate_gc(n=500, var_types = list('cont'=1:5, 'ord'=6:10, 'bin'=11:15))
-generate_gc(n=500, var_types = list('cont'=1:5, 'ord'=6:10), cont_transform=function(x)x^3)
-generate_gc(n=500, var_types = list('cont'=1:5, 'ord'=6:10), num_ord=3)
-generate_lrgc(rank = 5, sigma = 0.1, n=500, var_types = list('cont'=1:100), cont_transform=function(x)x^3)
-generate_lrgc(rank = 5, sigma = 0.1, n=500, var_types = list('ord'=1:100), num_ord=10)
-generate_lrgc(rank = 5, sigma = 0.1, n=500, var_types = list('bin'=1:100))
+generate_GC(n=500, var_types = list('cont'=1:5, 'ord'=6:10, 'bin'=11:15))
+generate_GC(n=500, var_types = list('cont'=1:5, 'ord'=6:10), cont_transform=function(x)x^3)
+generate_GC(n=500, var_types = list('cont'=1:5, 'ord'=6:10), num_ord=3)
+f = function(x)x^3
+generate_LRGC(rank = 5, sigma = 0.1, n = 500, var_types = list('cont'=1:99), cont_transform = f)
+generate_LRGC(rank = 5, sigma = 0.1, n = 500, var_types = list('ord'=1:99), num_ord = 10)
+generate_LRGC(rank = 5, sigma = 0.1, n = 500, var_types = list('bin'=1:99))
 }

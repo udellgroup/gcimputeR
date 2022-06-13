@@ -4,18 +4,18 @@
 \alias{em_mixedgc_ppca_iter}
 \title{Each iteration of EM algorithm fit (LRGC)}
 \usage{
-em_mixedgc_ppca_iter(Z, Z_lower, Z_upper, W, sigma)
+em_mixedgc_ppca_iter(Z, Lower, Upper, d_index, W, sigma, n_update = 1)
 }
 \arguments{
 \item{Z}{Incomplete Z matrix}
 
-\item{Z_lower}{Lower boundary of truncated intervals for ordinal columns}
-
-\item{Z_upper}{Upper boundary of truncated intervals for ordinal columns}
-
 \item{W}{The latent low rank subspace matrix}
 
 \item{sigma}{The noise variance}
+
+\item{Z_lower}{Lower boundary of truncated intervals for ordinal columns}
+
+\item{Z_upper}{Upper boundary of truncated intervals for ordinal columns}
 }
 \value{
 A list containing fitted copula parameters, the likelihood (objective function), Z matrix with updated ordinal entries and the conditional variance corresponding to the observed Z matrix.

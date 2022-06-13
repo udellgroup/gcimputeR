@@ -118,9 +118,8 @@ em_mixedgc = function(Z, Lower, Upper,
 #'   \item{\code{W}}{Fitted latent low rank subspace matrix}
 #'   \item{\code{sigma}}{Fitted noise variance}
 #'   \item{\code{loglik}}{The log-likelihood achieved during iteration.}
-#'   \item{\code{Zobs}}{Incomplete \code{Z} with approximated observed ordinal entries}
+#'   \item{\code{Z}}{Incomplete \code{Z} with approximated observed ordinal entries}
 #'   \item{\code{C}}{The conditional variance corresponding to the observed Z matrix. Useful for quantifying imputation uncertainty.}
-#'   \item{\code{S}}{Required quantity to impute the Z matrix}
 #' }
 #' @author Yuxuan Zhao, \email{yz2295@cornell.edu} and Madeleine Udell, \email{udell@cornell.edu}
 #' @references Zhao, Y., & Udell, M. (2020). Matrix Completion with Quantified Uncertainty through Low Rank Gaussian Copula. arXiv preprint arXiv:2006.10829.
