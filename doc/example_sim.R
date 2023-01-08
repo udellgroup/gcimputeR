@@ -33,7 +33,7 @@ mean(err_imp[11:15]) # SMAE across ordinal columns
 
 ## ----evaluate sigma-----------------------------------------------------------
 # relative Frobeinus error of imputed correlation matrix
-norm(fit$R - Sigma, type = 'F')/norm(fit$R, type = 'F') 
+norm(fit$corr - Sigma, type = 'F')/norm(fit$corr, type = 'F') 
 
 ## ----monitor, fig.height = 4, fig.width = 6, fig.align = "center"-------------
 plot(fit$loglik, ylab = 'value', type = 'b', pch = 20,
