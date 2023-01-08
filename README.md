@@ -26,7 +26,7 @@ fit = impute_GC(X_mask, verbose = TRUE)
 
 # Evaluation: compute the scaled-MAE (SMAE) for each data type
 # (scaled by MAE of median imputation) 
-err_imp = cal_smae(xhat = fit$Ximp, xobs = X_obs, xtrue = X, reduce = FALSE) 
+err_imp = cal_smae(xhat = fit$Ximp, xobs = X_mask, xtrue = X, reduce = FALSE) 
 for (t in names(var_types)){
   err = round(mean(err_imp[var_types[[t]]]), 4)
   print(paste0('SMAE of ', var_types[t], ' : ', err))
